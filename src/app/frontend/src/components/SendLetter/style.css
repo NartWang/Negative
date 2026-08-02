@@ -1,0 +1,81 @@
+.send-letter-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #B8D4C2 0%, #C8DDD0 100%);
+  color: #2D4738;
+  font-size: 14px; font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(184, 212, 194, 0.30);
+}
+.send-letter-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.sl-preview-title {
+  font-size: 14px; font-weight: 600; color: var(--color-text, #2D2A36);
+  margin-bottom: 6px;
+}
+.sl-preview-body {
+  background: rgba(184, 212, 194, 0.12);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0 0 8px;
+  max-height: 200px; overflow: auto;
+}
+.sl-tip {
+  font-size: 12px; color: var(--color-text-muted, #8E8696);
+  margin-bottom: 12px;
+}
+.sl-actions { display: flex; gap: 10px; }
+.sl-btn {
+  flex: 1; padding: 10px 14px; border-radius: 12px; border: none;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+}
+.sl-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.sl-btn-primary { background: #B8D4C2; color: #2D4738; }
+.sl-btn-secondary { background: rgba(142, 134, 150, 0.16); color: var(--color-text, #2D2A36); }
+.sl-btn-sm { flex: 0 0 auto; padding: 8px 16px; font-size: 13px; }
+
+.sl-section { margin-top: 12px; }
+.sl-section-label {
+  font-size: 12px; color: #8E8696; margin-bottom: 8px; font-weight: 500;
+}
+.sl-divider {
+  height: 1px; background: #E8E4DC; margin: 16px 0;
+}
+.sl-share-link {
+  display: flex; gap: 8px; align-items: center;
+}
+.sl-share-input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #E0DDE3;
+  background: #F8F6F3;
+  font-size: 12px;
+  font-family: monospace;
+  color: #3D3929;
+}
+.sl-share-input:focus {
+  outline: none;
+  border-color: #B8D4C2;
+}
+.sl-email-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #E0DDE3;
+  background: #F8F6F3;
+  font-size: 14px;
+  color: #3D3929;
+  box-sizing: border-box;
+}
+.sl-email-input:focus {
+  outline: none;
+  border-color: #B8D4C2;
+}
+.sl-email-input::placeholder { color: #B0ADA0; }
