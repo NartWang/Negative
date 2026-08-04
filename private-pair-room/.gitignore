@@ -1,0 +1,38 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Claude Code / AI tools
+.claude/
+.codex/
+.superpowers/
+.worktrees/
+
+# Python
+__pycache__/
+.pytest_cache/
+*.pyc
+*.pyo
+.env
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+.next/
+
+# Sandbox experiments
+_sandbox/
+
+# SQLite
+*.db
+*.sqlite3
+data/*.db*
+src/engine/data/*.db*

@@ -1,0 +1,140 @@
+.dt-banner {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px;
+  margin: 0 0 12px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #A8C5A0 0%, #BFD4B6 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(168, 197, 160, 0.30);
+}
+.dt-banner-text { flex: 1; }
+.dt-banner-title { font-size: 16px; font-weight: 600; }
+.dt-banner-sub   { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+.dt-banner-btn {
+  background: rgba(255,255,255,0.22);
+  color: #fff; border: none;
+  padding: 8px 16px; border-radius: 999px;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+}
+
+.dt-thumbs-scroll {
+  display: flex; gap: 12px;
+  overflow-x: auto; padding-bottom: 4px;
+  margin: 0 0 16px;
+  scroll-snap-type: x mandatory;
+}
+.dt-thumb {
+  flex: 0 0 140px;
+  scroll-snap-align: start;
+  border: none; background: transparent; padding: 0; cursor: pointer;
+  text-align: left;
+}
+.dt-thumb img {
+  width: 140px; height: 140px; object-fit: cover;
+  border-radius: 12px; display: block;
+}
+.dt-thumb-caption {
+  font-size: 12px; margin-top: 6px; color: var(--color-text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.dt-thumb-date {
+  font-size: 11px; color: var(--color-text-muted, #8E8696);
+}
+
+.dt-summary {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 10px 14px;
+  margin: 8px 0 12px;
+  background: rgba(168, 197, 160, 0.10);
+  border-left: 3px solid #A8C5A0;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+.dt-summary-spark { font-size: 14px; }
+.dt-summary-text { flex: 1; }
+
+.dt-col {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.dt-col-header {
+  font-size: 13px; font-weight: 600;
+  color: var(--color-text);
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(184,169,201,0.18);
+}
+.dt-col-list { display: flex; flex-direction: column; gap: 6px; }
+.dt-col-empty {
+  padding: 18px 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-text-muted, #8E8696);
+}
+
+.dt-event {
+  display: flex; gap: 8px;
+  padding: 10px 10px;
+  border-radius: 10px;
+  background: var(--color-card);
+  border: 1px solid transparent;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  transition: border-color 160ms ease, background 160ms ease, opacity 160ms ease;
+}
+.dt-event.selected {
+  border-color: #A8C5A0;
+  background: rgba(168, 197, 160, 0.10);
+}
+.dt-event.disabled { opacity: 0.4; cursor: not-allowed; }
+.dt-event-check {
+  width: 18px; height: 18px; flex-shrink: 0;
+  border: 1.5px solid #C8C4D0;
+  border-radius: 6px;
+  display: grid; place-items: center;
+  font-size: 12px;
+  color: #fff;
+  margin-top: 2px;
+}
+.dt-event-check.on { background: #A8C5A0; border-color: #A8C5A0; }
+.dt-event-body { flex: 1; min-width: 0; }
+.dt-event-head {
+  display: flex; gap: 6px; align-items: center;
+  font-size: 11px; color: var(--color-text-muted, #8E8696);
+}
+.dt-event-time { font-feature-settings: 'tnum'; }
+.dt-event-kind { padding: 1px 6px; background: rgba(184,169,201,0.15); border-radius: 4px; }
+.dt-event-title {
+  font-size: 13px; margin-top: 2px; color: var(--color-text);
+  word-break: break-word;
+}
+.dt-event-meta {
+  font-size: 11px; color: var(--color-text-muted, #8E8696); margin-top: 2px;
+}
+
+.dt-style-body { display: flex; flex-direction: column; gap: 10px; padding-bottom: 16px; }
+.dt-style-actions { display: flex; gap: 10px; margin-top: 6px; }
+.dt-btn {
+  flex: 1; padding: 10px 14px;
+  border-radius: 12px; border: none;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+}
+.dt-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.dt-btn-primary   { background: #A8C5A0; color: #fff; }
+.dt-btn-secondary { background: rgba(168, 197, 160, 0.16); color: var(--color-text); }
+.dt-btn-danger    { background: rgba(230, 120, 98, 0.18); color: #C5503A; }
+
+.dt-result-img {
+  display: block;
+  width: 100%; max-height: 70vh; object-fit: contain;
+  border-radius: 12px; background: #f0f5ec;
+  margin-top: 8px;
+}
+.dt-result-meta {
+  text-align: center; font-size: 12px;
+  color: var(--color-text-muted, #8E8696);
+  margin: 10px 0 6px;
+}
+.dt-result-actions { display: flex; gap: 8px; }
