@@ -1,0 +1,49 @@
+.fragment-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+}
+
+.fragment-meta { display: flex; align-items: center; gap: 8px; }
+.mood-emoji { font-size: 18px; }
+.fragment-time { font-size: 11px; color: var(--color-text-light); }
+
+.fragment-content p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text);
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.fragment-photo {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  margin-top: 8px;
+}
+
+.frag-edit { display: flex; flex-direction: column; gap: 10px; padding: 4px 4px 0; }
+.frag-edit textarea {
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  outline: none;
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  resize: vertical;
+  font-family: inherit;
+}
+.frag-edit textarea:focus { border-color: var(--color-primary); }
+.frag-edit-actions { display: flex; gap: 10px; margin-top: 6px; }
+.frag-edit-actions button { flex: 1; padding: 12px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; }

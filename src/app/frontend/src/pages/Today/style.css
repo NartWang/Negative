@@ -1,0 +1,187 @@
+.today-page { padding-bottom: 20px; }
+.today-body { padding: 18px 16px 116px; }
+
+.private-record-intro {
+  margin: 0 0 24px;
+  padding: 20px;
+  border: 1px solid #d8cec4;
+  border-radius: 18px;
+  background: #fffdf9;
+  box-shadow: 0 8px 28px rgba(54, 43, 34, 0.08);
+}
+
+.private-record-intro span {
+  color: #9a513c;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.private-record-intro h1 {
+  margin: 5px 0 8px;
+  color: #302923;
+  font-family: 'Songti SC', 'STSong', serif;
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+.private-record-intro p {
+  margin: 0;
+  color: #6e6258;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.section { margin-top: 24px; }
+.section:first-child { margin-top: 8px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.section-title {
+  margin: 0 0 10px;
+  padding-left: 2px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.section-header .section-title { margin: 0; }
+.record-calendar-section { padding-bottom: 2px; }
+
+.schedule-list,
+.fragment-list { display: flex; flex-direction: column; gap: 8px; }
+
+.add-btn {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid #8f4936;
+  border-radius: 50%;
+  background: #9a513c;
+  color: #fff;
+  font-size: 21px;
+  line-height: 1;
+}
+
+.fragment-form {
+  margin-bottom: 12px;
+  padding: 14px;
+  border: 1px solid #ddd3c9;
+  border-radius: 16px;
+  background: #fffdf9;
+  box-shadow: 0 8px 24px rgba(54, 43, 34, 0.07);
+}
+
+.fragment-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 0;
+  outline: 0;
+  resize: none;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.pending-photo { position: relative; display: inline-block; margin: 10px 0; }
+.pending-photo img { display: block; width: 120px; height: 120px; border-radius: 12px; object-fit: cover; }
+.remove-photo-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #9f4637;
+  color: #fff;
+  font-size: 16px;
+}
+
+.fragment-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.mood-selector { display: flex; flex-wrap: wrap; gap: 3px; }
+.mood-btn {
+  min-width: 36px;
+  min-height: 36px;
+  padding: 5px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 20px;
+}
+.mood-btn.active { border-color: #b86b52; background: #f7e6df; }
+
+.photo-btn {
+  min-height: 36px;
+  padding: 7px 11px;
+  border: 1px solid #c9b9ab;
+  border-radius: 10px;
+  background: #f6f0e9;
+  color: #5d5046;
+  font-size: 12px;
+  font-weight: 700;
+}
+.photo-btn:disabled { opacity: 0.5; }
+
+.submit-btn {
+  width: 100%;
+  min-height: 43px;
+  border-radius: 12px;
+  background: #9a513c;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+.submit-btn:disabled { opacity: 0.42; }
+
+.generate-btn {
+  position: fixed;
+  bottom: calc(var(--tab-bar-height) + 16px);
+  left: 50%;
+  z-index: 40;
+  min-width: min(330px, calc(100vw - 36px));
+  padding: 14px 24px;
+  transform: translateX(-50%);
+  border: 1px solid #8f4936;
+  border-radius: 14px;
+  background: #9a513c;
+  box-shadow: 0 12px 30px rgba(113, 58, 42, 0.28);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.add-sched-form { display: flex; flex-direction: column; gap: 8px; padding: 4px 4px 0; }
+.add-sched-form label { margin-top: 4px; color: var(--color-text-secondary); font-size: 12px; }
+.add-sched-form input {
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 11px;
+  outline: none;
+  font-size: 14px;
+}
+.add-sched-form input:focus { border-color: #9a513c; }
+.add-sched-form .btn-primary {
+  min-height: 44px;
+  margin-top: 10px;
+  border-radius: 12px;
+  background: #9a513c;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+.add-sched-form .btn-primary:disabled { opacity: 0.5; }
+
+@media (max-width: 360px) {
+  .today-body { padding-inline: 12px; }
+  .private-record-intro { padding: 16px; }
+  .mood-btn { min-width: 32px; }
+}

@@ -1,0 +1,88 @@
+.dt-page {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  min-height: 100vh;
+  padding: 0 14px 80px;
+  position: relative;
+}
+
+.dt-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  background: var(--color-bg);
+  border-bottom: 1px solid rgba(184,169,201,0.18);
+}
+.dt-back {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(184,169,201,0.15);
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--color-text);
+}
+.dt-header-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.dt-header-title { font-size: 15px; font-weight: 600; }
+.dt-header-date {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--color-text-muted, #8E8696);
+}
+.dt-date-arrow {
+  border: none; background: transparent; cursor: pointer;
+  color: var(--color-text-muted, #8E8696);
+  font-size: 16px; padding: 0 4px;
+}
+.dt-today-btn {
+  margin-left: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(168, 197, 160, 0.18);
+  border: none;
+  font-size: 11px;
+  color: #6B8C5C;
+  cursor: pointer;
+}
+
+.dt-columns {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+.dt-divider {
+  width: 1px;
+  background: rgba(184,169,201,0.18);
+  margin: 4px 0;
+}
+
+.dt-sticky-bar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(184,169,201,0.20);
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 10px;
+  z-index: 10;
+}
+.dt-sticky-count {
+  font-size: 13px;
+  color: var(--color-text-muted, #8E8696);
+}
+.dt-sticky-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: none;
+  background: #A8C5A0;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.dt-sticky-btn:disabled { opacity: 0.5; cursor: not-allowed; }

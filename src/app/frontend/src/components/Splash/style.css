@@ -1,0 +1,41 @@
+.splash {
+  position: fixed; inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: linear-gradient(180deg, #D8EBE0 0%, #F5EFE6 100%);
+  z-index: 9999;
+  transition: opacity 200ms ease-out;
+}
+.splash-exit { opacity: 0; pointer-events: none; }
+
+.splash-emoji {
+  font-size: 96px;
+  line-height: 1;
+  animation: splash-emoji 600ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.splash-title {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #2D4738;
+  font-family: Georgia, 'Times New Roman', serif;
+  animation: splash-title 500ms ease-out 300ms both;
+}
+.splash-sub {
+  font-size: 14px;
+  color: #6E7B73;
+  letter-spacing: 2px;
+  animation: splash-title 500ms ease-out 500ms both;
+}
+
+@keyframes splash-emoji {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes splash-title {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

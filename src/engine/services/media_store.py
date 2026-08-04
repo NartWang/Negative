@@ -1,0 +1,662 @@
+from __future__ import annotations
+
+import asyncio
+import base64
+import binascii
+import ipaddress
+import mimetypes
+import os
+import re
+import socket
+import tempfile
+from contextlib import asynccontextmanager
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Optional
+from urllib.parse import unquote, urlsplit, urlunsplit
+from uuid import UUID, uuid4
+
+import httpx
+
+import config
+
+
+SUPPORTED_IMAGE_TYPES = {
+    "image/gif": ".gif",
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+}
+SUPPORTED_UPLOAD_EXTENSIONS = {
+    ".gif": "image/gif",
+    ".jpeg": "image/jpeg",
+    ".jpg": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+}
+CANONICAL_MEDIA_PREFIX = "/api/media/"
+LEGACY_UPLOAD_PREFIX = "/api/upload/"
+_STORAGE_KEY_RE = re.compile(r"^[0-9a-f]{32}\.(?:gif|jpg|png|webp)$")
+
+
+class MediaStoreError(ValueError):
+    pass
+
+
+class InvalidMedia(MediaStoreError):
+    pass
+
+
+class UnsupportedMediaType(MediaStoreError):
+    pass
+
+
+class MediaTooLarge(MediaStoreError):
+    pass
+
+
+class RemoteMediaBlocked(MediaStoreError):
+    pass
+
+
+class MediaNotFound(MediaStoreError):
+    pass
+
+
+@dataclass(frozen=True)
+class MediaAsset:
+    id: str
+    owner_user_id: int
+    storage_key: str
+    mime_type: str
+    size_bytes: int
+
+    @property
+    def url(self) -> str:
+        return canonical_media_url(self.id)
+
+
+def canonical_media_url(asset_id: str) -> str:
+    return f"{CANONICAL_MEDIA_PREFIX}{asset_id}"
+
+
+def parse_canonical_media_url(value: Optional[str]) -> Optional[str]:
+    if not value or not value.startswith(CANONICAL_MEDIA_PREFIX):
+        return None
+    asset_id = value[len(CANONICAL_MEDIA_PREFIX) :]
+    if "/" in asset_id or "\\" in asset_id or "?" in asset_id or "#" in asset_id:
+        return None
+    try:
+        return str(UUID(asset_id))
+    except (TypeError, ValueError):
+        return None
+
+
+def _normalize_mime_type(value: Optional[str]) -> str:
+    mime_type = (value or "").split(";", 1)[0].strip().lower()
+    if mime_type == "image/jpg":
+        mime_type = "image/jpeg"
+    if mime_type not in SUPPORTED_IMAGE_TYPES:
+        raise UnsupportedMediaType("unsupported image MIME type")
+    return mime_type
+
+
+def _detect_image_mime(content: bytes) -> Optional[str]:
+    if content.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if content.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if content.startswith((b"GIF87a", b"GIF89a")):
+        return "image/gif"
+    if len(content) >= 12 and content[:4] == b"RIFF" and content[8:12] == b"WEBP":
+        return "image/webp"
+    return None
+
+
+def _validate_image_content(content: bytes, declared_mime: str) -> None:
+    # 遵循 BE-FILE-001 规范: 服务端按文件签名复核 MIME，拒绝仅伪造 Content-Type。
+    if _detect_image_mime(content) != declared_mime:
+        raise UnsupportedMediaType("image content does not match its MIME type")
+
+
+def _validate_upload_filename(filename: Optional[str], mime_type: str) -> None:
+    # 遵循 BE-FILE-001 规范: 原始扩展名与服务端 MIME 白名单必须一致。
+    extension = Path(filename or "").suffix.lower()
+    if SUPPORTED_UPLOAD_EXTENSIONS.get(extension) != mime_type:
+        raise UnsupportedMediaType("unsupported image filename")
+
+
+def _safe_storage_path(storage_key: str) -> Path:
+    # 遵循 BE-FILE-002 规范: 规范化后仍须限定在上传目录的直接子级。
+    if not _STORAGE_KEY_RE.fullmatch(storage_key):
+        raise InvalidMedia("invalid media storage key")
+    upload_dir = Path(config.get_upload_dir()).resolve()
+    candidate = (upload_dir / storage_key).resolve()
+    if candidate.parent != upload_dir:
+        raise InvalidMedia("invalid media storage key")
+    return candidate
+
+
+def _safe_legacy_filename(value: str) -> str:
+    decoded = unquote(value)
+    if (
+        not decoded
+        or len(decoded.encode("utf-8")) > 255
+        or decoded in {".", ".."}
+        or "/" in decoded
+        or "\\" in decoded
+        or "\x00" in decoded
+        or Path(decoded).name != decoded
+    ):
+        raise InvalidMedia("invalid legacy media path")
+    if Path(decoded).suffix.lower() not in SUPPORTED_UPLOAD_EXTENSIONS:
+        raise UnsupportedMediaType("unsupported legacy image filename")
+    return decoded
+
+
+def _legacy_path_from_url(url: str) -> Path:
+    if not url.startswith(LEGACY_UPLOAD_PREFIX):
+        raise InvalidMedia("unsupported generated media source")
+    filename = _safe_legacy_filename(url[len(LEGACY_UPLOAD_PREFIX) :])
+    upload_dir = Path(config.get_upload_dir()).resolve()
+    candidate = (upload_dir / filename).resolve()
+    if candidate.parent != upload_dir:
+        raise InvalidMedia("invalid legacy media path")
+    return candidate
+
+
+def legacy_file_path(url: str) -> Path:
+    path = _legacy_path_from_url(url)
+    if not path.is_file():
+        raise MediaNotFound("media not found")
+    size = path.stat().st_size
+    if size <= 0:
+        raise InvalidMedia("empty image")
+    if size > config.get_media_max_bytes():
+        raise MediaTooLarge("image is too large")
+    expected_mime = SUPPORTED_UPLOAD_EXTENSIONS[path.suffix.lower()]
+    with path.open("rb") as source:
+        header = source.read(16)
+    _validate_image_content(header, expected_mime)
+    return path
+
+
+async def store_bytes(
+    db: Any,
+    owner_user_id: int,
+    content: bytes,
+    mime_type: str,
+    *,
+    commit: bool = True,
+) -> MediaAsset:
+    """Atomically persist bounded bytes, then register their owning asset row."""
+    normalized_mime = _normalize_mime_type(mime_type)
+    if not content:
+        raise InvalidMedia("empty image")
+    if len(content) > config.get_media_max_bytes():
+        raise MediaTooLarge("image is too large")
+    _validate_image_content(content, normalized_mime)
+
+    upload_dir = Path(config.get_upload_dir()).resolve()
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    asset_id = str(uuid4())
+    storage_key = f"{uuid4().hex}{SUPPORTED_IMAGE_TYPES[normalized_mime]}"
+    final_path = _safe_storage_path(storage_key)
+    temp_path: Optional[Path] = None
+    final_created = False
+    try:
+        fd, raw_temp_path = tempfile.mkstemp(prefix=".media-", dir=str(upload_dir))
+        temp_path = Path(raw_temp_path)
+        with os.fdopen(fd, "wb") as output:
+            output.write(content)
+            output.flush()
+            os.fsync(output.fileno())
+        os.replace(temp_path, final_path)
+        temp_path = None
+        final_created = True
+
+        await db.execute(
+            "INSERT INTO media_assets "
+            "(id, owner_user_id, storage_key, mime_type, size_bytes) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (asset_id, owner_user_id, storage_key, normalized_mime, len(content)),
+        )
+        if commit:
+            await db.commit()
+        return MediaAsset(
+            id=asset_id,
+            owner_user_id=owner_user_id,
+            storage_key=storage_key,
+            mime_type=normalized_mime,
+            size_bytes=len(content),
+        )
+    except Exception:
+        if commit:
+            await db.rollback()
+        if temp_path is not None:
+            temp_path.unlink(missing_ok=True)
+        if final_created:
+            final_path.unlink(missing_ok=True)
+        raise
+
+
+async def store_upload(db: Any, owner_user_id: int, upload: Any) -> MediaAsset:
+    mime_type = _normalize_mime_type(upload.content_type)
+    _validate_upload_filename(upload.filename, mime_type)
+    maximum = config.get_media_max_bytes()
+    chunks: list[bytes] = []
+    total = 0
+    while True:
+        chunk = await upload.read(min(64 * 1024, maximum + 1))
+        if not chunk:
+            break
+        total += len(chunk)
+        if total > maximum:
+            raise MediaTooLarge("image is too large")
+        chunks.append(chunk)
+    return await store_bytes(db, owner_user_id, b"".join(chunks), mime_type)
+
+
+async def require_owned_asset(db: Any, user_id: int, asset_id: str) -> MediaAsset:
+    # 遵循 SEC-AUTH-002 规范: 附件只能绑定当前会话用户拥有的资产。
+    cursor = await db.execute(
+        "SELECT id, owner_user_id, storage_key, mime_type, size_bytes "
+        "FROM media_assets WHERE id = ? AND owner_user_id = ?",
+        (asset_id, user_id),
+    )
+    row = await cursor.fetchone()
+    if not row:
+        raise MediaNotFound("media not found")
+    return MediaAsset(**dict(row))
+
+
+async def resolve_owned_attachment(
+    db: Any,
+    user_id: int,
+    *,
+    asset_id: Optional[str],
+    url: Optional[str],
+) -> tuple[Optional[str], Optional[str]]:
+    if asset_id is None and url is None:
+        return None, None
+    resolved_id = asset_id
+    if url is not None:
+        url_asset_id = parse_canonical_media_url(url)
+        if url_asset_id is None:
+            raise InvalidMedia("media must use an owned asset URL")
+        if resolved_id is not None and resolved_id != url_asset_id:
+            raise InvalidMedia("media asset and URL do not match")
+        resolved_id = url_asset_id
+    if resolved_id is None:
+        raise InvalidMedia("media asset is required")
+    try:
+        resolved_id = str(UUID(resolved_id))
+    except (TypeError, ValueError):
+        raise MediaNotFound("media not found") from None
+    await require_owned_asset(db, user_id, resolved_id)
+    return resolved_id, canonical_media_url(resolved_id)
+
+
+async def _resolve_host(host: str, port: int) -> list[ipaddress._BaseAddress]:
+    loop = asyncio.get_running_loop()
+    try:
+        records = await loop.getaddrinfo(
+            host,
+            port,
+            family=socket.AF_UNSPEC,
+            type=socket.SOCK_STREAM,
+        )
+    except socket.gaierror as exc:
+        raise RemoteMediaBlocked("remote media host could not be resolved") from exc
+    addresses = []
+    for record in records:
+        try:
+            addresses.append(ipaddress.ip_address(record[4][0].split("%", 1)[0]))
+        except ValueError as exc:
+            raise RemoteMediaBlocked("remote media host is invalid") from exc
+    if not addresses:
+        raise RemoteMediaBlocked("remote media host could not be resolved")
+    return addresses
+
+
+def _address_is_allowed(address: ipaddress._BaseAddress) -> bool:
+    return config.get_media_allow_private_hosts() or address.is_global
+
+
+def _check_response_peer(
+    response: httpx.Response,
+    expected_address: ipaddress._BaseAddress,
+) -> None:
+    stream = response.extensions.get("network_stream")
+    if stream is None or not hasattr(stream, "get_extra_info"):
+        raise RemoteMediaBlocked("remote media peer could not be verified")
+    try:
+        peer = stream.get_extra_info("server_addr") or stream.get_extra_info(
+            "peername"
+        )
+    except Exception as exc:
+        raise RemoteMediaBlocked(
+            "remote media peer could not be verified"
+        ) from exc
+    if not peer:
+        raise RemoteMediaBlocked("remote media peer could not be verified")
+    if isinstance(peer, (tuple, list)):
+        if not peer:
+            raise RemoteMediaBlocked("remote media peer could not be verified")
+        raw_host = peer[0]
+    else:
+        raw_host = str(peer)
+    try:
+        address = ipaddress.ip_address(str(raw_host).split("%", 1)[0])
+    except ValueError as exc:
+        raise RemoteMediaBlocked("remote media peer is invalid") from exc
+    if address != expected_address:
+        raise RemoteMediaBlocked("remote media peer does not match pinned host")
+
+
+def _pinned_url(parsed: Any, address: ipaddress._BaseAddress, port: int) -> str:
+    host = f"[{address}]" if address.version == 6 else str(address)
+    return urlunsplit(
+        (
+            parsed.scheme,
+            f"{host}:{port}",
+            parsed.path or "/",
+            parsed.query,
+            "",
+        )
+    )
+
+
+async def download_remote(
+    url: str,
+    *,
+    transport: Optional[httpx.AsyncBaseTransport] = None,
+) -> tuple[bytes, str]:
+    # 遵循 BE-SSRF-001 规范: 禁止跳转和非公网地址，并在响应连接上复核 peer。
+    # 生成服务的签名 URL 可能位于动态 CDN 域名，无法配置稳定域名白名单；
+    # 因此按需求采用全量 DNS/IP + 实际 peer 双重校验并默认拒绝私网。
+    parsed = urlsplit(url)
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        raise InvalidMedia("generated media URL must use http or https")
+    if parsed.username is not None or parsed.password is not None:
+        raise InvalidMedia("generated media URL must not contain credentials")
+    try:
+        port = parsed.port or (443 if parsed.scheme == "https" else 80)
+    except ValueError:
+        raise InvalidMedia("generated media URL has an invalid port") from None
+
+    try:
+        literal = ipaddress.ip_address(parsed.hostname.split("%", 1)[0])
+        addresses = [literal]
+    except ValueError:
+        addresses = await _resolve_host(parsed.hostname, port)
+    if any(not _address_is_allowed(address) for address in addresses):
+        raise RemoteMediaBlocked("remote media host is not public")
+    pinned_address = addresses[0]
+    pinned_url = _pinned_url(parsed, pinned_address, port)
+    request_extensions = (
+        {"sni_hostname": parsed.hostname}
+        if parsed.scheme == "https"
+        else None
+    )
+
+    # A one-shot client prevents a TLS connection pinned for one hostname from
+    # being reused for another hostname that resolves to the same address.
+    client = httpx.AsyncClient(
+        timeout=httpx.Timeout(30.0),
+        follow_redirects=False,
+        trust_env=False,
+        transport=transport,
+    )
+    try:
+        async with client.stream(
+            "GET",
+            pinned_url,
+            headers={"Host": parsed.netloc},
+            extensions=request_extensions,
+            follow_redirects=False,
+        ) as response:
+            if 300 <= response.status_code < 400:
+                raise InvalidMedia("remote media redirects are not allowed")
+            response.raise_for_status()
+            _check_response_peer(response, pinned_address)
+            mime_type = _normalize_mime_type(response.headers.get("content-type"))
+            maximum = config.get_media_max_bytes()
+            content_length = response.headers.get("content-length")
+            if content_length is not None:
+                try:
+                    parsed_length = int(content_length)
+                except ValueError:
+                    raise InvalidMedia("invalid remote content length") from None
+                if parsed_length < 0:
+                    raise InvalidMedia("invalid remote content length")
+                if parsed_length > maximum:
+                    raise MediaTooLarge("image is too large")
+            chunks: list[bytes] = []
+            total = 0
+            async for chunk in response.aiter_bytes():
+                total += len(chunk)
+                if total > maximum:
+                    raise MediaTooLarge("image is too large")
+                chunks.append(chunk)
+            content = b"".join(chunks)
+            if not content:
+                raise InvalidMedia("empty image")
+            return content, mime_type
+    finally:
+        await client.aclose()
+
+
+async def materialize_generated(source: str) -> tuple[bytes, str]:
+    if not isinstance(source, str) or not source:
+        raise InvalidMedia("generated media source is missing")
+    if source.startswith("data:"):
+        header, separator, encoded = source.partition(",")
+        if not separator or not header.endswith(";base64"):
+            raise InvalidMedia("malformed image data URL")
+        mime_type = _normalize_mime_type(header[5:-7])
+        maximum = config.get_media_max_bytes()
+        if len(encoded) > ((maximum + 2) // 3) * 4 + 4:
+            raise MediaTooLarge("image is too large")
+        try:
+            content = base64.b64decode(encoded, validate=True)
+        except (binascii.Error, ValueError):
+            raise InvalidMedia("malformed image data URL") from None
+        if not content:
+            raise InvalidMedia("empty image")
+        if len(content) > maximum:
+            raise MediaTooLarge("image is too large")
+        return content, mime_type
+    if source.startswith(LEGACY_UPLOAD_PREFIX):
+        path = _legacy_path_from_url(source)
+        if not path.is_file():
+            raise InvalidMedia("generated local image is missing")
+        if path.stat().st_size > config.get_media_max_bytes():
+            raise MediaTooLarge("image is too large")
+        guessed_mime, _ = mimetypes.guess_type(path.name)
+        mime_type = _normalize_mime_type(guessed_mime)
+        content = path.read_bytes()
+        if not content:
+            raise InvalidMedia("empty image")
+        return content, mime_type
+    if source.startswith("http://") or source.startswith("https://"):
+        return await download_remote(source)
+    raise InvalidMedia("unsupported generated media source")
+
+
+class GeneratedMediaStage:
+    """Track generated files until their source rows commit in the same DB tx."""
+
+    def __init__(self, db: Any):
+        self.db = db
+        self._created_paths: list[Path] = []
+
+    async def store(self, owner_user_id: int, source: str) -> MediaAsset:
+        generated_local_path = None
+        if source.startswith(LEGACY_UPLOAD_PREFIX):
+            generated_local_path = _legacy_path_from_url(source)
+        try:
+            content, mime_type = await materialize_generated(source)
+            asset = await store_bytes(
+                self.db,
+                owner_user_id,
+                content,
+                mime_type,
+                commit=False,
+            )
+            self._created_paths.append(asset_file_path(asset))
+            return asset
+        finally:
+            if generated_local_path is not None:
+                generated_local_path.unlink(missing_ok=True)
+
+    def discard_files(self) -> None:
+        first_error = None
+        for path in reversed(self._created_paths):
+            try:
+                path.unlink(missing_ok=True)
+            except OSError as exc:
+                if first_error is None:
+                    first_error = exc
+        self._created_paths.clear()
+        if first_error is not None:
+            raise first_error
+
+    def accept_files(self) -> None:
+        self._created_paths.clear()
+
+
+@asynccontextmanager
+async def staged_generated_media(db: Any):
+    """Commit generated assets with their business rows or remove every file."""
+    stage = GeneratedMediaStage(db)
+    try:
+        yield stage
+        await db.commit()
+        stage.accept_files()
+    except BaseException:
+        try:
+            await db.rollback()
+        finally:
+            stage.discard_files()
+        raise
+
+
+async def store_generated_asset(
+    db: Any,
+    owner_user_id: int,
+    source: str,
+    *,
+    stage: GeneratedMediaStage,
+) -> MediaAsset:
+    if stage.db is not db:
+        raise ValueError("generated media stage belongs to another database")
+    return await stage.store(owner_user_id, source)
+
+
+async def legacy_url_is_owned(db: Any, user_id: int, url: str) -> bool:
+    _legacy_path_from_url(url)
+    cursor = await db.execute(
+        "SELECT 1 FROM ("
+        "SELECT id FROM profile WHERE id=? AND avatar_url=? "
+        "UNION ALL "
+        "SELECT id FROM fragments WHERE user_id=? AND photo_url=? "
+        "UNION ALL "
+        "SELECT i.id FROM images i JOIN diaries d ON d.id=i.diary_id "
+        "WHERE d.user_id=? AND i.url=? "
+        "UNION ALL "
+        "SELECT id FROM weekly_comics WHERE user_id=? AND url=? "
+        "UNION ALL "
+        "SELECT id FROM dual_timeline_comics WHERE user_a_id=? AND url=?"
+        ") LIMIT 1",
+        (
+            user_id,
+            url,
+            user_id,
+            url,
+            user_id,
+            url,
+            user_id,
+            url,
+            user_id,
+            url,
+        ),
+    )
+    return await cursor.fetchone() is not None
+
+
+async def import_owned_legacy_local(
+    db: Any,
+    owner_user_id: int,
+    url: str,
+    *,
+    commit: bool = False,
+) -> MediaAsset:
+    """Import a legacy local source only after proving its source-row owner."""
+    if not await legacy_url_is_owned(db, owner_user_id, url):
+        raise MediaNotFound("media not found")
+    content, mime_type = await materialize_generated(url)
+    return await store_bytes(
+        db,
+        owner_user_id,
+        content,
+        mime_type,
+        commit=commit,
+    )
+
+
+async def get_authorized_asset(
+    db: Any,
+    asset_id: str,
+    requester_user_id: int,
+) -> Optional[MediaAsset]:
+    cursor = await db.execute(
+        """
+        SELECT asset.id, asset.owner_user_id, asset.storage_key,
+               asset.mime_type, asset.size_bytes
+        FROM media_assets AS asset
+        WHERE asset.id = ? AND (
+            asset.owner_user_id = ?
+            OR EXISTS (
+                SELECT 1
+                FROM room_post_media AS post_media
+                JOIN room_posts AS post ON post.id = post_media.post_id
+                JOIN rooms AS room
+                  ON room.id = post.room_id AND room.status = 'active'
+                JOIN room_members AS viewer
+                  ON viewer.room_id = room.id
+                 AND viewer.user_id = ? AND viewer.left_at IS NULL
+                JOIN room_members AS author
+                  ON author.room_id = room.id
+                 AND author.user_id = post.author_user_id
+                 AND author.left_at IS NULL
+                WHERE post_media.asset_id = asset.id
+                  AND post.status = 'published' AND post.revoked_at IS NULL
+                  AND post.author_user_id = asset.owner_user_id
+            )
+            OR EXISTS (
+                SELECT 1
+                FROM rooms AS room
+                JOIN room_members AS viewer
+                  ON viewer.room_id = room.id
+                 AND viewer.user_id = ? AND viewer.left_at IS NULL
+                JOIN room_members AS partner
+                  ON partner.room_id = room.id
+                 AND partner.user_id != viewer.user_id
+                 AND partner.left_at IS NULL
+                JOIN profile AS profile
+                  ON profile.id = partner.user_id
+                 AND profile.avatar_asset_id = asset.id
+                WHERE room.status = 'active'
+                  AND partner.user_id = asset.owner_user_id
+            )
+        )
+        """,
+        (asset_id, requester_user_id, requester_user_id, requester_user_id),
+    )
+    row = await cursor.fetchone()
+    return MediaAsset(**dict(row)) if row else None
+
+
+def asset_file_path(asset: MediaAsset) -> Path:
+    return _safe_storage_path(asset.storage_key)
