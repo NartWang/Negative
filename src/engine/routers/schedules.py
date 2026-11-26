@@ -1,7 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 import aiosqlite
+from auth.dependencies import get_current_user_id, require_same_origin
 from database import get_db
 
 router = APIRouter()
@@ -12,7 +13,6 @@ class ScheduleCreate(BaseModel):
     time: Optional[str] = None
     title: str
     feeling: Optional[str] = None
-    user_id: int = 1
 
 
 class ScheduleUpdate(BaseModel):
@@ -23,17 +23,24 @@ class ScheduleUpdate(BaseModel):
 
 
 @router.post("")
-async def create_schedule(data: ScheduleCreate):
+async def create_schedule(
+    data: ScheduleCreate,
+    _: None = Depends(require_same_origin),
+    user_id: int = Depends(get_current_user_id),
+):
     db = await get_db()
     try:
         cursor = await db.execute(
             "INSERT INTO schedules (date, time, title, feeling, user_id) VALUES (?, ?, ?, ?, ?)",
-            (data.date, data.time, data.title, data.feeling, data.user_id),
+            (data.date, data.time, data.title, data.feeling, user_id),
         )
         new_id = cursor.lastrowid
-        await _upsert_checkin(db, data.date, data.user_id, has_schedule=True)
+        await _upsert_checkin(db, data.date, user_id, has_schedule=True)
         await db.commit()
-        cursor = await db.execute("SELECT * FROM schedules WHERE id = ?", (new_id,))
+        cursor = await db.execute(
+            "SELECT * FROM schedules WHERE id = ? AND user_id = ?",
+            (new_id, user_id),
+        )
         row = await cursor.fetchone()
         result = dict(row)
         result["completed"] = bool(result["completed"])
@@ -43,7 +50,9 @@ async def create_schedule(data: ScheduleCreate):
 
 
 @router.get("")
-async def list_schedules(date: str, user_id: int = 1):
+async def list_schedules(
+    date: str, user_id: int = Depends(get_current_user_id)
+):
     db = await get_db()
     try:
         cursor = await db.execute(
@@ -62,7 +71,12 @@ async def list_schedules(date: str, user_id: int = 1):
 
 
 @router.put("/{schedule_id}")
-async def update_schedule(schedule_id: int, data: ScheduleUpdate):
+async def update_schedule(
+    schedule_id: int,
+    data: ScheduleUpdate,
+    _: None = Depends(require_same_origin),
+    user_id: int = Depends(get_current_user_id),
+):
     db = await get_db()
     try:
         updates = []
@@ -75,11 +89,21 @@ async def update_schedule(schedule_id: int, data: ScheduleUpdate):
                 updates.append(f"{field} = ?")
                 values.append(value)
         if not updates:
+            cursor = await db.execute(
+                "SELECT 1 FROM schedules WHERE id = ? AND user_id = ?",
+                (schedule_id, user_id),
+            )
+            if not await cursor.fetchone():
+                raise HTTPException(status_code=404, detail="schedule not found")
             return {"message": "nothing to update"}
-        values.append(schedule_id)
-        await db.execute(
-            f"UPDATE schedules SET {', '.join(updates)} WHERE id = ?", values
+        values.extend([schedule_id, user_id])
+        cursor = await db.execute(
+            f"UPDATE schedules SET {', '.join(updates)} "
+            "WHERE id = ? AND user_id = ?",
+            values,
         )
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="schedule not found")
         await db.commit()
         return {"message": "updated"}
     finally:
@@ -87,10 +111,19 @@ async def update_schedule(schedule_id: int, data: ScheduleUpdate):
 
 
 @router.delete("/{schedule_id}")
-async def delete_schedule(schedule_id: int):
+async def delete_schedule(
+    schedule_id: int,
+    _: None = Depends(require_same_origin),
+    user_id: int = Depends(get_current_user_id),
+):
     db = await get_db()
     try:
-        await db.execute("DELETE FROM schedules WHERE id = ?", (schedule_id,))
+        cursor = await db.execute(
+            "DELETE FROM schedules WHERE id = ? AND user_id = ?",
+            (schedule_id, user_id),
+        )
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="schedule not found")
         await db.commit()
         return {"message": "deleted"}
     finally:

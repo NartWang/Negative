@@ -1,0 +1,204 @@
+.film-folder {
+  padding: 0 20px 32px;
+  max-width: 640px;
+  margin: 0 auto;
+  color: var(--ink-primary);
+}
+
+.film-folder-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 0 16px;
+}
+
+.film-folder-heading {
+  min-width: 0;
+}
+
+.film-folder-heading h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink-primary, #463d52);
+  letter-spacing: 0.01em;
+}
+
+.film-folder-heading p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--ink-tertiary, #a89eb8);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.film-folder-export {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--paper-deep, #e5ddee);
+  background: rgba(255, 252, 246, 0.78);
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--ink-secondary, #7d7289);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.film-folder-export:hover {
+  background: var(--paper, #faf7fc);
+  border-color: var(--accent, #c9bade);
+}
+
+.film-folder-export:active {
+  background: var(--paper-deep, #f0eaf4);
+}
+
+.film-folder-tabs {
+  display: flex;
+  gap: 8px;
+  background: var(--paper-deep, #f0eaf4);
+  border-radius: 14px;
+  padding: 4px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(216, 190, 158, 0.55);
+}
+
+.film-folder-tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 9px 0;
+  border-radius: 11px;
+  font-size: 15px;
+  color: var(--ink-secondary, #7d7289);
+  cursor: pointer;
+}
+
+.film-folder-tab.active {
+  background: rgba(255, 252, 246, 0.92);
+  color: var(--ink-primary, #463d52);
+  font-weight: 600;
+  box-shadow: 0 3px 10px rgba(77, 45, 27, 0.08);
+}
+
+.film-folder-create {
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  padding: 13px 0;
+  margin: 4px 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary), var(--accent-strong));
+  box-shadow: 0 10px 22px rgba(142, 69, 42, 0.18);
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.film-folder-create:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.film-folder-create:active:not(:disabled) {
+  filter: brightness(0.94);
+}
+
+.film-folder-create:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.film-folder-create-quota {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.film-folder-continue {
+  width: 100%;
+  border: 1px solid var(--paper-deep, #e0d6ea);
+  background: var(--paper, #faf7fc);
+  border-radius: 14px;
+  padding: 11px 0;
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--ink-secondary, #7d7289);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.film-folder-continue:hover {
+  background: rgba(255, 252, 246, 0.86);
+  border-color: var(--accent, #c9bade);
+}
+
+.film-folder-continue:active {
+  background: var(--paper-deep, #f0eaf4);
+}
+
+.film-folder-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  background: #fbeeec;
+  color: #b4544a;
+  font-size: 13px;
+}
+
+.film-folder-error button {
+  border: none;
+  background: none;
+  color: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.film-folder-loading {
+  text-align: center;
+  color: var(--ink-tertiary, #a89eb8);
+  font-size: 13px;
+  margin: 32px 0;
+}
+
+.film-folder-motion-hint {
+  margin: 24px 0 6px;
+  color: var(--text-muted, #8f7565);
+  font-size: 15px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.film-folder-create-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.film-folder-create-option {
+  border: 1px solid var(--paper-deep, #e5ddee);
+  background: #fff;
+  border-radius: 12px;
+  padding: 13px 0;
+  font-size: 15px;
+  color: var(--ink-primary, #463d52);
+  cursor: pointer;
+}
+
+.film-folder-create-option:active {
+  background: var(--paper, #faf7fc);
+}

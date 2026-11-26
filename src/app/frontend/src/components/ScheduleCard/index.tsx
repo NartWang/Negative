@@ -24,20 +24,22 @@ export default function ScheduleCard({ schedule, onToggle, onUpdate, onDelete }:
   return (
     <>
       <div className={`schedule-card pressable ${schedule.completed ? 'completed' : ''}`}>
-        <button
-          className="check-btn"
-          onClick={(e) => { e.stopPropagation(); onToggle(schedule.id, !schedule.completed) }}
-          aria-label={schedule.completed ? '标记未完成' : '标记完成'}
-        >
-          {schedule.completed ? '✅' : '⬜'}
-        </button>
-        <button className="schedule-content" onClick={() => setEditing(true)}>
+        <label className="schedule-check" onClick={event => event.stopPropagation()}>
+          <input
+            type="checkbox"
+            checked={schedule.completed}
+            aria-label={schedule.completed ? '标记未完成' : '标记完成'}
+            onChange={event => onToggle(schedule.id, event.target.checked)}
+          />
+          <span aria-hidden="true" />
+        </label>
+        <button type="button" className="schedule-content" onClick={() => setEditing(true)}>
           <div className="schedule-title">
             {schedule.time && <span className="schedule-time">{schedule.time}</span>}
             {schedule.title}
           </div>
           {schedule.feeling && (
-            <div className="schedule-feeling">💭 {schedule.feeling}</div>
+            <div className="schedule-feeling">{schedule.feeling}</div>
           )}
         </button>
       </div>

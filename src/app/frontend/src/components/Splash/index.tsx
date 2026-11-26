@@ -22,8 +22,8 @@ export default function Splash({ onDone }: Props) {
   return (
     <div className={`splash ${exiting ? 'splash-exit' : ''}`}>
       <div className="splash-emoji">👨‍👩‍👧</div>
-      <div className="splash-title">Happy Family</div>
-      <div className="splash-sub">知己 · ZhiJi</div>
+      <div className="splash-title">底片</div>
+      <div className="splash-sub">把零散日常，冲洗成有人追更的人生剧</div>
     </div>
   )
 }

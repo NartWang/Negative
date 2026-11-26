@@ -1,0 +1,197 @@
+/*
+ * Warm cream + brick-red palette taken from the UI reference screens.
+ * Scoped to `.mine-scope` on purpose: the rest of the app keeps its cool
+ * blue-grey tokens from index.css, so no other tab is affected.
+ */
+.mine-scope {
+  --m-bg: #EFE8DD;
+  --m-bg-deep: #E9DCCB;
+  --m-card: rgba(255, 252, 246, 0.84);
+  --m-card-alt: #F5E9DB;
+  --m-line: #EADBC5;
+  --m-line-soft: #F1E6D7;
+  --m-accent: #C88363;
+  --m-accent-deep: #8E452A;
+  --m-accent-soft: #F5E3D5;
+  --m-text: #4D2D1B;
+  --m-text-2: #83624D;
+  --m-radius-card: 16px;
+  --m-radius-inner: 12px;
+  --m-shadow: 0 6px 18px rgba(120, 86, 58, 0.08);
+  --m-shadow-lift: 0 12px 28px rgba(120, 86, 58, 0.14);
+  --m-serif: 'Songti SC', 'Noto Serif SC', 'Source Han Serif SC', serif;
+
+  background:
+    radial-gradient(circle at 50% 0, rgba(255, 252, 246, 0.62), transparent 32%),
+    var(--m-bg);
+  color: var(--m-text);
+}
+
+/* ---------- shared primitives ---------- */
+
+.m-topbar {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
+  align-items: center;
+  padding: 6px 0 10px;
+}
+
+.m-back {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--m-card);
+  border: 1px solid var(--m-line);
+  color: var(--m-text);
+}
+
+.m-back svg { width: 20px; height: 20px; }
+
+.m-topbar-title {
+  margin: 0;
+  font-family: var(--m-serif);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: var(--m-text);
+}
+
+.m-topbar-sub {
+  grid-column: 1 / -1;
+  margin: 4px 0 0;
+  font-size: 12px;
+  text-align: center;
+  color: var(--m-text-2);
+}
+
+.m-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #D98B67 0%, #B96542 100%);
+  box-shadow: 0 8px 18px rgba(169, 82, 44, 0.24);
+  color: #FFF9F2;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.m-primary:disabled {
+  background: var(--m-card-alt);
+  box-shadow: none;
+  color: var(--m-text-2);
+  cursor: not-allowed;
+}
+
+.m-primary svg { width: 18px; height: 18px; }
+
+.m-ghost {
+  width: 100%;
+  min-height: 44px;
+  color: var(--m-text-2);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.m-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: var(--m-radius-inner);
+  background: var(--m-card-alt);
+  color: var(--m-text-2);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.m-notice svg {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  margin-top: 1px;
+  color: var(--m-accent);
+}
+
+.m-field-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--m-text-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.m-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 14px;
+  border: 1px solid var(--m-line);
+  border-radius: var(--m-radius-inner);
+  background: var(--m-card);
+}
+
+.m-input-wrap:focus-within { border-color: var(--m-accent); }
+
+.m-input-wrap input,
+.m-input-wrap textarea {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  color: var(--m-text);
+  font-size: 16px;
+  outline: none;
+}
+
+.m-input-wrap textarea { padding: 14px 0; resize: none; line-height: 1.6; }
+
+.m-input-wrap > svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  color: var(--m-text-2);
+}
+
+/* Hand-written looking section lead, mirrored from the reference screen. */
+.m-script {
+  position: relative;
+  display: inline-block;
+  margin: 0 0 2px;
+  padding-bottom: 8px;
+  font-family: var(--m-serif);
+  font-size: 19px;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: 0.12em;
+  color: var(--m-text);
+}
+
+.m-script::after {
+  content: '';
+  position: absolute;
+  right: 6px;
+  bottom: 0;
+  left: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border-bottom: 2px solid rgba(192, 102, 60, 0.42);
+}
+
+/* Dried-flower watermarks used as page decoration (inline SVG, no images). */
+.m-leaf {
+  position: absolute;
+  color: rgba(169, 138, 96, 0.26);
+  pointer-events: none;
+}
+
+.m-leaf svg { width: 100%; height: 100%; }

@@ -13,10 +13,11 @@ import './style.css'
 const MAX_SELECT = 6
 
 interface Props {
+  userId?: number
   onBack: () => void
 }
 
-export default function DualTimeline({ onBack }: Props) {
+export default function DualTimeline({ userId, onBack }: Props) {
   const toast = useToast()
   const { currentDate, setCurrentDate } = useCurrentDate()
   const [date, setDate] = useState(currentDate)
@@ -100,7 +101,7 @@ export default function DualTimeline({ onBack }: Props) {
       })
       setShowStyle(false)
       setShowResult(c)
-      toast.success('生成完成 ✨')
+      toast.success('生成完成')
     } catch (e) {
       toast.error((e as Error)?.message || '生成失败')
     } finally {
@@ -114,7 +115,7 @@ export default function DualTimeline({ onBack }: Props) {
     await submitGenerate(lastStyle)
   }
 
-  const share = () => toast.info('长按图片可保存到相册分享 ✨')
+  const share = () => toast.info('长按图片可保存到相册分享')
 
   const remove = async () => {
     if (!showResult) return
@@ -156,7 +157,7 @@ export default function DualTimeline({ onBack }: Props) {
         />
         <div className="dt-divider" />
         <TimelineColumn
-          title={data?.user_b.nickname || '家人'}
+          title={data?.user_b?.nickname || '家人'}
           side="right"
           events={data?.events_b ?? []}
           selectedIds={selected}
@@ -177,6 +178,7 @@ export default function DualTimeline({ onBack }: Props) {
       </div>
 
       <StyleSheet
+        userId={userId}
         open={showStyle}
         onClose={() => setShowStyle(false)}
         generating={generating}

@@ -3,9 +3,11 @@ import type { DrawStyle } from '../../types'
 import { thisWeekRange, previousWeekRange } from '../../utils/week'
 import BottomSheet from '../BottomSheet'
 import StyleSelector from '../StyleSelector'
+import { getDrawStylePreference, getUserPreference, setUserPreference } from '../../utils/userPreferences'
 import './style.css'
 
 interface Props {
+  userId?: number
   open: boolean
   onClose: () => void
   onSubmit: (args: {
@@ -19,15 +21,13 @@ interface Props {
 
 type Preset = 'this' | 'prev' | 'custom'
 
-export default function GenerateSheet({ open, onClose, onSubmit, generating }: Props) {
+export default function GenerateSheet({ userId, open, onClose, onSubmit, generating }: Props) {
   const [preset, setPreset] = useState<Preset>('this')
   const [start, setStart] = useState('')
   const [end, setEnd] = useState('')
-  const [style, setStyle] = useState<DrawStyle>(
-    (localStorage.getItem('drawStyle') as DrawStyle) || 'ghibli'
-  )
+  const [style, setStyle] = useState<DrawStyle>(() => getDrawStylePreference(userId))
   const [customStylePrompt, setCustomStylePrompt] = useState(
-    localStorage.getItem('customDraw') || ''
+    getUserPreference(userId, 'customDraw') || ''
   )
 
   useEffect(() => {
@@ -45,7 +45,6 @@ export default function GenerateSheet({ open, onClose, onSubmit, generating }: P
       week_start: start,
       week_end: end,
       style,
-      custom_style_prompt: style === 'custom' ? customStylePrompt : undefined,
     })
   }
 
@@ -81,9 +80,7 @@ export default function GenerateSheet({ open, onClose, onSubmit, generating }: P
         <div className="wc-section-label">风格</div>
         <StyleSelector
           value={style}
-          onChange={(v) => { setStyle(v); localStorage.setItem('drawStyle', v) }}
-          customPrompt={customStylePrompt}
-          onCustomChange={(v) => { setCustomStylePrompt(v); localStorage.setItem('customDraw', v) }}
+          onChange={(v) => { setStyle(v); setUserPreference(userId, 'drawStyle', v) }}
         />
 
         <div className="wc-actions">

@@ -1,15 +1,64 @@
-.style-selector { display: flex; flex-direction: column; gap: 8px; }
-.ss-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.style-selector { display: flex; flex-direction: column; gap: 10px; }
+.ss-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .ss-chip {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  padding: 12px 6px; border-radius: var(--radius-md);
-  background: var(--color-bg-card);
-  border: 2px solid transparent;
+  min-width: 0;
+  overflow: hidden;
+  display: flex; flex-direction: column; align-items: stretch;
+  padding: 0; border-radius: 14px;
+  background: #FFFCF7;
+  border: 2px solid var(--color-border);
   cursor: pointer;
+  color: var(--color-text);
+  text-align: left;
+  box-shadow: 0 5px 16px rgba(97, 59, 36, 0.06);
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
-.ss-chip.active { border-color: var(--color-primary); background: var(--color-primary-light); }
-.ss-emoji { font-size: 22px; }
-.ss-label { font-size: 12px; color: var(--color-text); }
+.ss-chip.active {
+  border-color: var(--color-primary);
+  background: #FFF9F2;
+  box-shadow: 0 7px 20px rgba(169, 86, 53, 0.16);
+}
+.ss-chip:not(:disabled):active { transform: scale(0.985); }
+.ss-cover-wrap {
+  position: relative;
+  display: block;
+  aspect-ratio: 5 / 3;
+  overflow: hidden;
+  background: var(--color-primary-light);
+}
+.ss-cover {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+.ss-selected {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  font-size: 15px;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(77, 45, 27, 0.2);
+}
+.ss-copy {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 10px 11px 11px;
+}
+.ss-label { font-size: 16px; font-weight: 750; color: var(--color-text); }
+.ss-desc { font-size: 12px; color: var(--color-text-secondary); white-space: nowrap; }
+.ss-chip:focus-visible { outline: 3px solid rgba(200, 131, 99, 0.28); outline-offset: 2px; }
+.ss-chip:disabled { cursor: wait; opacity: 0.65; }
 .ss-custom {
   padding: 10px 12px;
   border: 1px solid var(--color-border);

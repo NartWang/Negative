@@ -1,0 +1,139 @@
+.fragment-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.fragment-composer textarea {
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.7;
+  background: transparent;
+  color: inherit;
+}
+
+.composer-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.composer-time-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 218px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
+  border-radius: 12px;
+  background: rgba(255, 252, 246, 0.7);
+}
+
+.composer-time-caption {
+  color: var(--color-text-light);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+}
+
+.composer-time-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.composer-time-readable {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+@media (max-width: 360px) {
+  .composer-time-field { min-width: 196px; }
+  .composer-time-controls { gap: 6px; }
+  .composer-time-readable { font-size: 11px; }
+}
+
+.composer-photo-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
+  border-radius: 10px;
+  background: rgba(255, 252, 246, 0.7);
+  color: inherit;
+  font-family: 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+  font-size: 15px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.composer-photo-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.composer-pending-photo {
+  position: relative;
+  align-self: flex-start;
+  max-width: 160px;
+}
+
+.composer-pending-photo img {
+  display: block;
+  max-width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.composer-remove-photo {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.composer-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--danger-color, #c0453d);
+}
+
+.composer-submit {
+  width: 100%;
+  padding: 11px 0;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #D98B67, #B96542);
+  box-shadow: 0 8px 18px rgba(142, 69, 42, 0.16);
+  color: #fff;
+  font-family: 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.composer-submit:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

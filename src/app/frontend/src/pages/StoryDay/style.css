@@ -1,0 +1,442 @@
+.story-day-page {
+  min-height: 100vh;
+  padding: 14px 16px 36px;
+  background: var(--color-bg);
+}
+
+.story-day-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.story-day-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.story-day-back {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}
+
+.story-day-back svg {
+  width: 21px;
+  height: 21px;
+}
+
+.story-day-export {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: white;
+  font-size: 13px;
+  font-weight: 850;
+  box-shadow: var(--shadow-sm);
+}
+
+.story-day-export:disabled {
+  opacity: 0.68;
+}
+
+.story-day-export svg {
+  width: 18px;
+  height: 18px;
+}
+
+.story-day-cover {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  display: block;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--color-bg-subtle);
+}
+
+.story-day-cover.empty {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: var(--color-primary-dark);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.story-day-hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.story-day-hero-copy time {
+  color: var(--color-primary-dark);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.story-day-hero-copy h1 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 28px;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+}
+
+.story-day-hero-copy p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.story-day-export-error {
+  color: var(--color-danger);
+  font-weight: 800;
+}
+
+.story-day-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 2px;
+}
+
+.story-day-labels span,
+.story-day-mood,
+.story-day-diary span {
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.story-day-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.story-day-section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.story-day-section-heading p {
+  margin: 0;
+  color: var(--color-text-light);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.story-day-section-heading h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 19px;
+  font-weight: 850;
+}
+
+.story-day-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  list-style: none;
+}
+
+.story-day-timeline-item {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.story-day-timeline-item time {
+  color: var(--color-primary-dark);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.story-day-timeline-item h3 {
+  margin: 4px 0 0;
+  color: var(--color-text);
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.story-day-timeline-item p {
+  margin: 5px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.story-day-item-kind {
+  color: var(--color-text-light);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.story-day-fragment-text {
+  color: var(--color-text) !important;
+}
+
+.story-day-fragment-photo {
+  width: 100%;
+  max-height: 260px;
+  margin-top: 10px;
+  display: block;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
+
+.story-day-mood {
+  display: inline-flex;
+  margin-top: 8px;
+}
+
+.story-day-diary,
+.story-day-picturebook,
+.story-day-work {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.story-day-diary {
+  padding: 14px;
+}
+
+.story-day-diary > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.story-day-diary time {
+  color: var(--color-primary-dark);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.story-day-diary p {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.story-day-picturebook {
+  min-height: 120px;
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 13px;
+  padding: 12px;
+}
+
+.story-day-picturebook-cover {
+  width: 104px;
+  height: 104px;
+  display: block;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--color-bg-subtle);
+}
+
+.story-day-picturebook-cover-button {
+  width: 104px;
+  height: 104px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: transparent;
+}
+
+.story-day-picturebook-cover-button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.story-day-picturebook-cover-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.story-day-picturebook-cover.empty {
+  display: grid;
+  place-items: center;
+  padding: 10px;
+  color: var(--color-primary-dark);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.story-day-picturebook-body,
+.story-day-work-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.story-day-picturebook-body span,
+.story-day-work-main span {
+  color: var(--color-text-light);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.story-day-picturebook-body h3,
+.story-day-work-main h3 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 16px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.story-day-picturebook-body p,
+.story-day-work-main p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.story-day-picturebook-body button,
+.story-day-visibility,
+.story-day-publish,
+.story-day-state button {
+  align-self: flex-start;
+  min-height: 34px;
+  margin-top: auto;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-dark);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.story-day-work {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px;
+}
+
+.story-day-work.no-image {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.story-day-work img {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
+
+.story-day-visibility,
+.story-day-publish {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 0;
+}
+
+.story-day-publish {
+  background: var(--color-primary, #c17f59);
+}
+
+.story-day-visibility svg {
+  width: 16px;
+  height: 16px;
+}
+
+.story-day-book-viewer {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.story-day-book-page {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.story-day-book-page img {
+  width: 100%;
+  display: block;
+  border-radius: var(--radius-md);
+}
+
+.story-day-book-page p {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.story-day-empty,
+.story-day-state {
+  min-height: 96px;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.story-day-state.error {
+  gap: 12px;
+  color: var(--color-danger);
+}
+
+@media (max-width: 360px) {
+  .story-day-page {
+    padding-inline: 12px;
+  }
+
+  .story-day-hero-copy h1 {
+    font-size: 24px;
+  }
+
+  .story-day-picturebook {
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+
+  .story-day-picturebook-cover {
+    width: 88px;
+    height: 96px;
+  }
+}

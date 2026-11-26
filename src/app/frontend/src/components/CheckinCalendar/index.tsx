@@ -18,14 +18,27 @@ function getMonthDays(year: number, month: number): (Date | null)[] {
 
 const fmt = (d: Date) => getLocalDateStr(d)
 
-export default function CheckinCalendar() {
+interface Props {
+  onSelectDate?: (date: string) => void
+  markerMode?: 'all' | 'fragments'
+  selectedDate?: string
+}
+
+export default function CheckinCalendar({ onSelectDate, markerMode = 'all', selectedDate }: Props) {
   const { currentDate, setCurrentDate } = useCurrentDate()
   const [info, setInfo] = useState<StreakInfo | null>(null)
-  const initial = parseLocalDate(currentDate)
+  const activeDate = selectedDate ?? currentDate
+  const initial = parseLocalDate(activeDate)
   const [year, setYear] = useState(initial.getFullYear())
   const [month, setMonth] = useState(initial.getMonth())
 
-  useEffect(() => { streaksApi.get().then(setInfo).catch(() => {}) }, [currentDate])
+  useEffect(() => { streaksApi.get().then(setInfo).catch(() => {}) }, [activeDate])
+
+  useEffect(() => {
+    const next = parseLocalDate(activeDate)
+    setYear(next.getFullYear())
+    setMonth(next.getMonth())
+  }, [activeDate])
 
   const days = getMonthDays(year, month)
   const todayStr = getLocalDateStr(new Date())
@@ -51,9 +64,11 @@ export default function CheckinCalendar() {
           if (!d) return <div key={i} className="cal-cell empty" />
           const ds = fmt(d)
           const entry = calendarData[ds]
-          const hasRecord = !!(entry && (entry.has_schedule || entry.has_fragment))
+          const hasRecord = markerMode === 'fragments'
+            ? !!(entry && entry.has_fragment)
+            : !!(entry && (entry.has_schedule || entry.has_fragment))
           const isToday = ds === todayStr
-          const isSelected = ds === currentDate
+          const isSelected = ds === activeDate
           return (
             <button
               key={i}
@@ -63,7 +78,10 @@ export default function CheckinCalendar() {
                 isToday ? 'is-today' : '',
                 isSelected ? 'is-selected' : '',
               ].filter(Boolean).join(' ')}
-              onClick={() => setCurrentDate(ds)}
+              onClick={() => {
+                setCurrentDate(ds)
+                onSelectDate?.(ds)
+              }}
             >
               <span className="cal-day">{d.getDate()}</span>
               {hasRecord && <span className="cal-tick">✓</span>}

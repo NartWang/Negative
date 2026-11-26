@@ -1,0 +1,164 @@
+.room-post {
+  position: relative;
+  padding: 20px;
+  border: 1px solid var(--we-line);
+  border-radius: 4px 22px 22px 22px;
+  background: var(--we-paper);
+  box-shadow: 0 10px 30px rgba(68, 52, 39, 0.07);
+}
+
+.room-post-partner { border-radius: 22px 4px 22px 22px; }
+.room-post + .room-post { margin-top: 18px; }
+
+.room-post-header {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+}
+
+.room-post-avatar {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid #cbbca9;
+  border-radius: 50%;
+  background: #efe1cf;
+  color: #6d3f33;
+  font-family: 'STKaiti', 'KaiTi', serif;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.room-post-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.room-post-header strong { display: block; color: #312b27; font-size: 15px; }
+.room-post-header > div { min-width: 0; }
+.room-post-header strong { overflow-wrap: anywhere; }
+.room-post-header time { display: block; margin-top: 3px; color: #736960; font-size: 12px; }
+
+.room-post-owner {
+  min-width: 0;
+  color: #806d5e;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  overflow-wrap: anywhere;
+}
+
+.room-post-note,
+.room-post-diary > p:not(.room-post-eyebrow),
+.room-post-comic > p:not(.room-post-eyebrow) {
+  margin-top: 17px;
+  color: #332d29;
+  font-family: 'STSong', 'Songti SC', serif;
+  font-size: 18px;
+  line-height: 1.78;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.room-post-eyebrow {
+  margin-top: 17px;
+  color: #8b503f;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+
+.room-post-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 15px;
+}
+
+.room-post-gallery-1 { grid-template-columns: 1fr; }
+.room-post-gallery img,
+.room-post-comic img {
+  width: 100%;
+  max-height: 380px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+.room-post-gallery:not(.room-post-gallery-1) img { aspect-ratio: 1; }
+.room-post-comic img { margin-top: 13px; border: 1px solid #ded1c3; }
+
+.room-post-actions {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 8px;
+  margin-top: 17px;
+  padding-top: 12px;
+  border-top: 1px solid #e9dfd4;
+}
+
+.room-action {
+  max-width: 100%;
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: 9px;
+  color: #4f5c55;
+  font-size: 13px;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+.room-action:hover { background: #edf0e9; }
+.room-action:focus-visible { outline: 3px solid #bd775f; outline-offset: 2px; }
+.room-action.liked { background: #f3ded5; color: #853e32; }
+.room-action-danger { margin-left: auto; color: #963a31; }
+.room-action:disabled { cursor: wait; opacity: .58; }
+
+.room-comments {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f3eee6;
+  list-style: none;
+}
+.room-comments li { min-width: 0; display: flex; gap: 7px; color: #47403a; font-size: 13px; line-height: 1.55; }
+.room-comments li + li { margin-top: 5px; }
+.room-comments strong { min-width: 0; flex: 0 1 auto; color: #304e46; overflow-wrap: anywhere; }
+.room-comments span { min-width: 0; overflow-wrap: anywhere; }
+.room-comments-more { margin-top: 6px; color: #70675e; font-size: 12px; }
+
+.room-comment-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  margin-top: 10px;
+}
+.room-comment-form input {
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid #cfc2b4;
+  border-radius: 10px;
+  background: #fffefa;
+  color: #2f2925;
+  font-size: 14px;
+}
+.room-comment-form input:focus { outline: 3px solid #e2b8a9; border-color: #8f4939; }
+.room-comment-form button {
+  min-height: 42px;
+  padding: 0 13px;
+  border-radius: 10px;
+  background: #344f47;
+  color: white;
+  font-size: 13px;
+  font-weight: 800;
+}
+.room-comment-form button:disabled { cursor: not-allowed; opacity: .5; }
+.room-post-error { margin-top: 8px; color: #8c2f27; font-size: 13px; }
+
+@media (max-width: 350px) {
+  .room-post { padding: 16px; }
+  .room-post-header { grid-template-columns: 38px minmax(0, 1fr); }
+  .room-post-avatar { width: 38px; height: 38px; }
+  .room-post-owner { grid-column: 2; }
+  .room-comment-form { grid-template-columns: 1fr; }
+  .room-comment-form button { width: 100%; }
+  .room-action-danger { margin-left: 0; }
+}

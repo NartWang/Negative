@@ -1,0 +1,29 @@
+.pixel-sprite {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.pixel-sprite-empty {
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(192, 102, 60, 0.06);
+  color: rgba(74, 58, 46, 0.28);
+}
+
+.pixel-sprite-empty svg {
+  width: 44%;
+  max-width: 56px;
+  height: auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

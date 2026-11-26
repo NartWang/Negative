@@ -1,0 +1,59 @@
+.fragment-editor { display: flex; flex-direction: column; gap: 10px; padding: 4px 4px 0; }
+
+.fragment-editor textarea {
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  outline: none;
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  resize: vertical;
+  font-family: inherit;
+}
+.fragment-editor textarea:focus { border-color: var(--color-primary); }
+
+.fragment-editor-time {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--color-text-light);
+}
+
+
+.fragment-editor-photo-preview img,
+.fragment-editor-photo-preview .image-fallback {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+.fragment-editor-photo-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+.fragment-editor-photo-actions button,
+.fragment-editor-add-photo {
+  flex: 1;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  font-size: 13px;
+  cursor: pointer;
+}
+.fragment-editor-add-photo { width: 100%; }
+
+.fragment-editor-actions { display: flex; gap: 10px; margin-top: 6px; }
+.fragment-editor-actions button {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+}

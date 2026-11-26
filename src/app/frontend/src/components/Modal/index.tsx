@@ -1,4 +1,5 @@
 import { ReactNode, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import './style.css'
 
 interface Props {
@@ -35,9 +36,15 @@ export default function Modal({
 
   if (!open) return null
 
-  return (
+  return createPortal(
     <div className="modal-backdrop fade-in" onClick={onClose}>
-      <div className="modal-card pop" onClick={e => e.stopPropagation()}>
+      <div
+        className="modal-card pop"
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        onClick={e => e.stopPropagation()}
+      >
         {title && <div className="modal-title">{title}</div>}
         {description && <div className="modal-desc">{description}</div>}
         {children}
@@ -58,6 +65,7 @@ export default function Modal({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

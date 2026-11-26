@@ -8,8 +8,8 @@ interface Props {
   disabled?: boolean
 }
 
-const MOOD_EMOJI: Record<string, string> = {
-  happy: '🥰', warm: '☀️', calm: '🌿', sad: '🌧',
+const MOOD_LABEL: Record<string, string> = {
+  happy: '开心', warm: '温暖', calm: '平静', sad: '低落',
 }
 
 export default function EventCard({ event, selected, onToggle, disabled }: Props) {
@@ -18,10 +18,10 @@ export default function EventCard({ event, selected, onToggle, disabled }: Props
     : (event.content || '(空)')
 
   const meta: string[] = []
-  if (event.type === 'schedule' && event.completed) meta.push('✅')
+  if (event.type === 'schedule' && event.completed) meta.push('完成')
   if (event.type === 'schedule' && event.feeling) meta.push(event.feeling)
   if (event.type === 'fragment' && event.mood_tag) {
-    meta.push((MOOD_EMOJI[event.mood_tag] || '') + ' ' + event.mood_tag)
+    meta.push(MOOD_LABEL[event.mood_tag] || event.mood_tag)
   }
 
   return (

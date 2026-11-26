@@ -1,14 +1,20 @@
 import aiosqlite
-import os
+from config import get_db_path
 from models import init_db  # re-export for main.py
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "data", "zhiji.db")
+BUSY_TIMEOUT_MS = 5_000
 
 
 async def get_db() -> aiosqlite.Connection:
-    db = await aiosqlite.connect(DB_PATH)
-    db.row_factory = aiosqlite.Row
-    return db
+    db = await aiosqlite.connect(get_db_path())
+    try:
+        db.row_factory = aiosqlite.Row
+        await db.execute("PRAGMA foreign_keys = ON")
+        await db.execute(f"PRAGMA busy_timeout = {BUSY_TIMEOUT_MS}")
+        return db
+    except Exception:
+        await db.close()
+        raise
 
 
 __all__ = ["get_db", "init_db"]
