@@ -2,9 +2,11 @@ import { useState } from 'react'
 import type { DrawStyle } from '../../types'
 import BottomSheet from '../BottomSheet'
 import StyleSelector from '../StyleSelector'
+import { getDrawStylePreference, setUserPreference } from '../../utils/userPreferences'
 import './style.css'
 
 interface Props {
+  userId?: number
   open: boolean
   onClose: () => void
   generating: boolean
@@ -12,20 +14,15 @@ interface Props {
   selectedCount: number
 }
 
-export default function StyleSheet({ open, onClose, generating, onSubmit, selectedCount }: Props) {
-  const [style, setStyle] = useState<DrawStyle>(
-    (localStorage.getItem('drawStyle') as DrawStyle) || 'ghibli'
-  )
-  const [custom, setCustom] = useState(localStorage.getItem('customDraw') || '')
+export default function StyleSheet({ userId, open, onClose, generating, onSubmit, selectedCount }: Props) {
+  const [style, setStyle] = useState<DrawStyle>(() => getDrawStylePreference(userId))
 
   return (
     <BottomSheet open={open} onClose={() => !generating && onClose()} title={`生成漫画（已选 ${selectedCount}）`}>
       <div className="dt-style-body">
         <StyleSelector
           value={style}
-          onChange={(v) => { setStyle(v); localStorage.setItem('drawStyle', v) }}
-          customPrompt={custom}
-          onCustomChange={(v) => { setCustom(v); localStorage.setItem('customDraw', v) }}
+          onChange={(v) => { setStyle(v); setUserPreference(userId, 'drawStyle', v) }}
         />
         <div className="dt-style-actions">
           <button className="dt-btn dt-btn-secondary" onClick={onClose} disabled={generating}>
@@ -33,7 +30,7 @@ export default function StyleSheet({ open, onClose, generating, onSubmit, select
           </button>
           <button
             className="dt-btn dt-btn-primary pressable"
-            onClick={() => onSubmit({ style, custom_style_prompt: style === 'custom' ? custom : undefined })}
+            onClick={() => onSubmit({ style })}
             disabled={generating}
           >
             {generating ? '生成中…' : '开始生成'}

@@ -1,0 +1,68 @@
+.room-temperature {
+  padding: 17px;
+  border: 1px solid #c8d2c8;
+  border-radius: 16px;
+  background: #edf1e9;
+}
+
+.room-temperature-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.room-temperature-heading > div:first-child { min-width: 0; }
+.room-temperature-heading p { color: #637168; font-size: 11px; font-weight: 800; letter-spacing: .1em; }
+.room-temperature-heading h2 { min-width: 0; margin-top: 3px; color: #2d3d37; font-size: 17px; overflow-wrap: anywhere; }
+
+.temperature-subjects {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  padding: 3px;
+  border: 1px solid #bdc8bd;
+  border-radius: 10px;
+  background: #f8faf5;
+}
+.temperature-subjects button {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 32px;
+  padding: 0 9px;
+  border-radius: 7px;
+  color: #56645d;
+  font-size: 11px;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+.temperature-subjects button[aria-pressed='true'] { background: #314d45; color: white; }
+.temperature-subjects button:focus-visible,
+.temperature-control:focus-visible { outline: 3px solid #bc725d; outline-offset: 2px; }
+
+.temperature-reading { min-width: 0; display: flex; align-items: center; gap: 13px; margin-top: 14px; }
+.temperature-reading > div { min-width: 0; }
+.temperature-score { color: #704337; font-family: Georgia, 'Songti SC', serif; font-size: 44px; font-weight: 700; line-height: 1; }
+.temperature-reading strong { display: flex; align-items: center; gap: 6px; color: #34453e; font-size: 15px; }
+.temperature-swatch { width: 9px; height: 9px; display: inline-block; border: 1px solid #5f5a54; border-radius: 50%; }
+.temperature-reading > div > span { display: block; margin-top: 3px; color: #65726c; font-size: 12px; overflow-wrap: anywhere; }
+.temperature-unavailable { min-width: 0; margin-top: 18px; color: #5a675f; font-size: 14px; overflow-wrap: anywhere; }
+
+.temperature-control {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 14px;
+  border-radius: 10px;
+  background: #314d45;
+  color: white;
+  font-size: 13px;
+  font-weight: 800;
+}
+.temperature-control.secondary { border: 1px solid #8c9a90; background: transparent; color: #43574e; }
+.temperature-control:disabled { cursor: wait; opacity: .55; }
+
+@media (max-width: 370px) {
+  .room-temperature-heading { display: block; }
+  .temperature-subjects { margin-top: 12px; }
+  .temperature-subjects button { flex: 1; }
+}

@@ -1,12 +1,24 @@
 import datetime
 from typing import Optional
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from auth.dependencies import get_current_user_id
 from database import get_db
 from agents.thermometer_agent import (
     compute_quant, label_for_score, ai_score_and_comment,
 )
 
 router = APIRouter()
+
+
+def parse_temperature_date(value: str) -> datetime.date:
+    """Parse only the canonical calendar-date representation used by the APIs."""
+    try:
+        parsed = datetime.date.fromisoformat(value)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="invalid date") from None
+    if parsed.isoformat() != value:
+        raise HTTPException(status_code=400, detail="invalid date")
+    return parsed
 
 
 async def _consecutive_checkin_days(db, user_id: int, anchor: datetime.date) -> int:
@@ -37,44 +49,64 @@ async def _consecutive_checkin_days(db, user_id: int, anchor: datetime.date) -> 
     return streak
 
 
-@router.get("")
-async def get_thermometer(user_id: int = 1, date: Optional[str] = None):
-    if date is None:
-        date = datetime.date.today().isoformat()
-    try:
-        anchor = datetime.date.fromisoformat(date)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="invalid date")
-
+async def load_temperature_inputs(
+    user_id: int,
+    snapshot_date: str,
+    anchor: datetime.date,
+) -> dict:
+    """Load owner-scoped inputs using a short-lived database connection."""
     db = await get_db()
     try:
         cursor = await db.execute(
             "SELECT nickname FROM profile WHERE id = ?", (user_id,)
         )
         prof_row = await cursor.fetchone()
-        nickname = prof_row["nickname"] if prof_row else "你"
+        raw_nickname = prof_row["nickname"] if prof_row else None
+        nickname = (
+            raw_nickname.strip()
+            if isinstance(raw_nickname, str) and raw_nickname.strip()
+            else "你"
+        )
 
         cursor = await db.execute(
             "SELECT * FROM schedules WHERE date = ? AND user_id = ?",
-            (date, user_id),
+            (snapshot_date, user_id),
         )
-        schedules = [dict(r) for r in await cursor.fetchall()]
-        for s in schedules:
-            s["completed"] = bool(s["completed"])
+        schedules = [dict(row) for row in await cursor.fetchall()]
+        for schedule in schedules:
+            schedule["completed"] = bool(schedule["completed"])
 
         cursor = await db.execute(
             "SELECT * FROM fragments WHERE date = ? AND user_id = ?",
-            (date, user_id),
+            (snapshot_date, user_id),
         )
-        fragments = [dict(r) for r in await cursor.fetchall()]
+        fragments = [dict(row) for row in await cursor.fetchall()]
 
         streak = await _consecutive_checkin_days(db, user_id, anchor)
     finally:
         await db.close()
 
+    return {
+        "nickname": nickname,
+        "schedules": schedules,
+        "fragments": fragments,
+        "streak": streak,
+    }
+
+
+async def compute_temperature(inputs: dict) -> dict:
+    """Compute a temperature after all database resources are released.
+
+    The returned mapping is an internal result. Callers decide which fields are
+    private and which form an explicit room-safe snapshot.
+    """
+    nickname = inputs["nickname"]
+    schedules = inputs["schedules"]
+    fragments = inputs["fragments"]
+    streak = inputs["streak"]
     frag_count = len(fragments)
     sched_total = len(schedules)
-    sched_done = sum(1 for s in schedules if s["completed"])
+    sched_done = sum(1 for schedule in schedules if schedule["completed"])
     ratio = (sched_done / sched_total) if sched_total else 0.0
 
     quant = compute_quant(frag_count, ratio, streak)
@@ -82,6 +114,7 @@ async def get_thermometer(user_id: int = 1, date: Optional[str] = None):
     score = max(0, min(100, quant + ai_score))
     label, color = label_for_score(score)
     return {
+        "nickname": nickname,
         "score": score,
         "label": label,
         "color": color,
@@ -94,4 +127,30 @@ async def get_thermometer(user_id: int = 1, date: Optional[str] = None):
             "schedules_completed": sched_done,
             "consecutive_days": streak,
         },
+    }
+
+
+@router.get("")
+async def get_thermometer(
+    date: Optional[str] = None,
+    user_id: int = Depends(get_current_user_id),
+):
+    if date is None:
+        date = datetime.date.today().isoformat()
+    anchor = parse_temperature_date(date)
+
+    # 遵循 BE-AUTH-001 规范: all inputs are scoped to the session user.
+    inputs = await load_temperature_inputs(user_id, date, anchor)
+    computed = await compute_temperature(inputs)
+    return {
+        key: computed[key]
+        for key in (
+            "score",
+            "label",
+            "color",
+            "comment",
+            "quant_score",
+            "ai_score",
+            "inputs",
+        )
     }

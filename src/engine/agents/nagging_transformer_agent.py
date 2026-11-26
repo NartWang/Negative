@@ -15,8 +15,11 @@ The three styles map to the spec's "反客为主" strategies:
 
 import json
 import re
-import httpx
-from config import DIARY_API_BASE_URL, DIARY_API_KEY, DIARY_MODEL
+from agents.diary_agent import (
+    AIEmptyResponseError,
+    AIResponseError,
+    request_chat_completion,
+)
 
 
 _THINK_BLOCK_RE = re.compile(r"<think>[\s\S]*?</think>", re.IGNORECASE)
@@ -115,42 +118,48 @@ async def transform_nagging(nag_text: str, relation: str = "妈妈") -> dict:
     Returns:
         {"help_request": str, "co_challenge": str, "warm_echo": str}
 
-    Raises:
-        ValueError: if the model returns non-parseable output.
+    Raises a typed generation error when the provider output is unusable.
     """
     user_message = f"""父母（关系：{relation}）刚刚发来的话：
 "{nag_text}"
 
 请生成三种回应卡片，输出 JSON。"""
 
-    async with httpx.AsyncClient(timeout=60) as client:
-        response = await client.post(
-            f"{DIARY_API_BASE_URL}/chat/completions",
-            headers={"Authorization": f"Bearer {DIARY_API_KEY}"},
-            json={
-                "model": DIARY_MODEL,
-                "messages": [
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user", "content": user_message},
-                ],
-                "temperature": 0.85,
-                "max_tokens": 2000,
-            },
-        )
-        response.raise_for_status()
-        raw = response.json()["choices"][0]["message"]["content"]
+    raw = await request_chat_completion(
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_message},
+        ],
+        temperature=0.85,
+        max_tokens=2000,
+        timeout=60,
+    )
 
     cleaned = _strip_reasoning(raw)
     json_str = _extract_json(cleaned)
 
     try:
         parsed = json.loads(json_str)
-    except json.JSONDecodeError as e:
-        raise ValueError(f"AI 返回的不是合法 JSON: {e}\n原始内容：{raw[:300]}")
+    except json.JSONDecodeError:
+        raise AIResponseError(
+            "AI service returned an invalid response"
+        ) from None
 
-    required = {"help_request", "co_challenge", "warm_echo"}
-    missing = required - parsed.keys()
+    if not isinstance(parsed, dict):
+        raise AIResponseError("AI service returned an invalid response")
+
+    required = ("help_request", "co_challenge", "warm_echo")
+    missing = set(required) - parsed.keys()
     if missing:
-        raise ValueError(f"AI 返回缺少字段：{missing}\n原始内容：{raw[:300]}")
+        raise AIResponseError("AI service returned an invalid response")
 
-    return {k: str(parsed[k]).strip() for k in required}
+    cards = {}
+    for key in required:
+        value = parsed[key]
+        if not isinstance(value, str):
+            raise AIResponseError("AI service returned an invalid response")
+        value = value.strip()
+        if not value:
+            raise AIEmptyResponseError("AI service returned empty content")
+        cards[key] = value
+    return cards

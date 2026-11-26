@@ -1,53 +1,68 @@
 import { useState } from 'react'
-import type { Fragment } from '../../types'
-import BottomSheet from '../BottomSheet'
-import { relativeTime } from '../../utils/relativeTime'
+import type { Fragment, FragmentUpdatePayload } from '../../types'
+import { fragmentClockTime, readableClockTime } from '../../utils/recordTime'
+import FragmentEditorSheet from '../FragmentEditorSheet'
+import ImageViewer from '../ImageViewer'
+import SafeImage from '../SafeImage'
+import { Pencil } from '../Icon'
 import './style.css'
-
-const MOOD_EMOJI: Record<string, string> = {
-  happy: '😊', calm: '😌', sad: '😢', anxious: '😰', angry: '😤',
-}
 
 interface Props {
   fragment: Fragment
-  onUpdate: (id: number, data: { content?: string; mood_tag?: string }) => void
-  onDelete: (id: number) => void
+  onUpdate: (id: number, data: FragmentUpdatePayload) => Promise<void>
+  onDelete: (id: number) => Promise<void>
 }
 
 export default function FragmentItem({ fragment, onUpdate, onDelete }: Props) {
   const [editing, setEditing] = useState(false)
-  const [text, setText] = useState(fragment.content ?? '')
+  const [viewing, setViewing] = useState(false)
+  const clockTime = fragmentClockTime(fragment)
 
   return (
-    <>
-      <button className="fragment-item pressable" onClick={() => setEditing(true)}>
-        <div className="fragment-meta">
-          {fragment.mood_tag && (
-            <span className="mood-emoji">{MOOD_EMOJI[fragment.mood_tag] || '💭'}</span>
-          )}
-          <span className="fragment-time">{relativeTime(fragment.created_at)}</span>
-        </div>
-        <div className="fragment-content">
-          {fragment.content && <p>{fragment.content}</p>}
-          {fragment.photo_url && (
-            <img src={fragment.photo_url} alt="" className="fragment-photo" />
-          )}
-        </div>
-      </button>
+    <article className="fragment-item">
+      <div className="fragment-time-col">
+        <span className="fragment-time-period">{readableClockTime(clockTime).split(' ')[0]}</span>
+        <span className="fragment-time">{readableClockTime(clockTime).split(' ')[1] ?? clockTime}</span>
+      </div>
+      <div className="fragment-body">
+        {fragment.content && <p className="fragment-text">{fragment.content}</p>}
+        {fragment.photo_url && (
+          <button
+            type="button"
+            className="fragment-photo-btn"
+            aria-label="查看完整照片"
+            onClick={() => setViewing(true)}
+          >
+            <SafeImage
+              src={fragment.photo_url}
+              alt={fragment.photo_description ?? '随记照片'}
+              className="fragment-photo-preview"
+            />
+          </button>
+        )}
+        <button
+          type="button"
+          className="fragment-edit-btn"
+          aria-label="编辑随记"
+          onClick={() => setEditing(true)}
+        ><Pencil /></button>
+      </div>
 
-      <BottomSheet open={editing} onClose={() => setEditing(false)} title="编辑碎片">
-        <div className="frag-edit">
-          <textarea value={text} onChange={e => setText(e.target.value)} rows={4} placeholder="想法..."/>
-          <div className="frag-edit-actions">
-            <button className="btn-danger" onClick={() => { onDelete(fragment.id); setEditing(false) }}>删除</button>
-            <button
-              className="btn-primary"
-              onClick={() => { onUpdate(fragment.id, { content: text.trim() }); setEditing(false) }}
-              disabled={!text.trim()}
-            >保存</button>
-          </div>
-        </div>
-      </BottomSheet>
-    </>
+      {viewing && fragment.photo_url && (
+        <ImageViewer
+          src={fragment.photo_url}
+          alt={fragment.photo_description ?? '随记照片'}
+          onClose={() => setViewing(false)}
+        />
+      )}
+
+      <FragmentEditorSheet
+        open={editing}
+        fragment={fragment}
+        onClose={() => setEditing(false)}
+        onUpdate={onUpdate}
+        onDelete={onDelete}
+      />
+    </article>
   )
 }

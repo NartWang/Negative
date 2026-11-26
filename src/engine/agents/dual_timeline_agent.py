@@ -5,10 +5,13 @@ Both call GLM. summarize falls back to a fixed line; plan_comic raises on hard f
 """
 import json
 import re
-import httpx
 from typing import Optional
-from config import DIARY_API_BASE_URL, DIARY_API_KEY, DIARY_MODEL
-from agents.image_agent import STYLE_PROMPTS
+from agents.diary_agent import (
+    AIEmptyResponseError,
+    AIResponseError,
+    request_chat_completion,
+)
+from agents.image_agent import DEFAULT_STYLE_KEY, STYLE_PROMPTS
 
 _THINK_RE = re.compile(r"<think>[\s\S]*?</think>", re.IGNORECASE)
 _UNTERMINATED_THINK_RE = re.compile(r"<think>[\s\S]*$", re.IGNORECASE)
@@ -40,7 +43,7 @@ def _events_to_lines(events: list) -> str:
 def _style_prompt(style: str, custom: Optional[str]) -> str:
     if style == "custom" and custom:
         return custom
-    return STYLE_PROMPTS.get(style) or STYLE_PROMPTS["ghibli"]
+    return STYLE_PROMPTS.get(style) or STYLE_PROMPTS[DEFAULT_STYLE_KEY]
 
 
 async def summarize(
@@ -64,22 +67,15 @@ async def summarize(
     )
 
     try:
-        async with httpx.AsyncClient(timeout=20) as client:
-            response = await client.post(
-                f"{DIARY_API_BASE_URL}/chat/completions",
-                headers={"Authorization": f"Bearer {DIARY_API_KEY}"},
-                json={
-                    "model": DIARY_MODEL,
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_message},
-                    ],
-                    "temperature": 0.6,
-                    "max_tokens": 800,
-                },
-            )
-            response.raise_for_status()
-            raw = response.json()["choices"][0]["message"]["content"]
+        raw = await request_chat_completion(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_message},
+            ],
+            temperature=0.6,
+            max_tokens=800,
+            timeout=20,
+        )
         cleaned = _strip(raw)
         match = _JSON_RE.search(cleaned)
         if not match:
@@ -120,22 +116,15 @@ async def plan_comic(
         "请输出 JSON。"
     )
 
-    async with httpx.AsyncClient(timeout=60) as client:
-        response = await client.post(
-            f"{DIARY_API_BASE_URL}/chat/completions",
-            headers={"Authorization": f"Bearer {DIARY_API_KEY}"},
-            json={
-                "model": DIARY_MODEL,
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_message},
-                ],
-                "temperature": 0.7,
-                "max_tokens": 1200,
-            },
-        )
-        response.raise_for_status()
-        raw = response.json()["choices"][0]["message"]["content"]
+    raw = await request_chat_completion(
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message},
+        ],
+        temperature=0.7,
+        max_tokens=1200,
+        timeout=60,
+    )
 
     cleaned = _strip(raw)
     match = _JSON_RE.search(cleaned)
@@ -143,10 +132,18 @@ async def plan_comic(
         return cleaned[:780], "同一天的两面"
     try:
         payload = json.loads(match.group(0))
-        prompt = str(payload.get("prompt", "")).strip()[:800]
-        caption = str(payload.get("caption", "")).strip()[:30] or "同一天的两面"
-        if not prompt:
-            raise ValueError("empty prompt")
+        if not isinstance(payload, dict):
+            raise AIResponseError("AI service returned an invalid response")
+        raw_prompt = payload.get("prompt")
+        if not isinstance(raw_prompt, str) or not raw_prompt.strip():
+            raise AIEmptyResponseError("AI service returned empty content")
+        prompt = raw_prompt.strip()[:800]
+        raw_caption = payload.get("caption")
+        caption = (
+            raw_caption.strip()[:30]
+            if isinstance(raw_caption, str) and raw_caption.strip()
+            else "同一天的两面"
+        )
         return prompt, caption
-    except Exception:
+    except (json.JSONDecodeError, TypeError):
         return cleaned[:780], "同一天的两面"

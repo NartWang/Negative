@@ -1,0 +1,193 @@
+.monthly-collection {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 28px;
+}
+
+.monthly-collection-month + .monthly-collection-month {
+  padding-top: 24px;
+  border-top: 2px solid rgba(177, 112, 78, 0.28);
+}
+
+.monthly-collection-empty {
+  margin: 32px 0;
+  text-align: center;
+  color: var(--ink-tertiary, #a89eb8);
+  font-size: 14px;
+}
+
+.monthly-collection-heading {
+  margin: 0 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-secondary, #7d7289);
+  letter-spacing: 0.02em;
+}
+
+.monthly-collection-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.monthly-work-item { min-width: 0; }
+
+.monthly-work-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 14px;
+  transition: transform 0.18s ease;
+}
+
+.monthly-work-cover-shell { position: relative; width: 100%; }
+
+.monthly-work-demo-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--accent-strong, #6f5b8f);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 6px rgba(93, 75, 120, 0.18);
+  pointer-events: none;
+}
+
+.monthly-collection-demo .monthly-collection-heading {
+  color: var(--accent-strong, #6f5b8f);
+}
+.monthly-work-cover-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.monthly-work-card:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) {
+  .monthly-work-card:hover .monthly-work-cover {
+    box-shadow: 0 4px 16px rgba(93, 75, 120, 0.16);
+  }
+  .monthly-work-card:hover .monthly-work-title {
+    color: var(--accent-strong, #6f5b8f);
+  }
+}
+
+.monthly-work-cover {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--paper-deep, #f0eaf4);
+  box-shadow: 0 2px 10px rgba(93, 75, 120, 0.08);
+}
+
+.monthly-work-cover.is-motion-comic {
+  aspect-ratio: 16 / 9;
+}
+
+.monthly-work-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.monthly-work-cover-fallback {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.6), transparent 55%),
+    linear-gradient(150deg, #d9cfe4 0%, #c3b6d4 55%, #ab9cc0 100%);
+}
+
+.monthly-work-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 2px 0;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.monthly-work-title {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  color: var(--ink-primary, #463d52);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.monthly-work-publish,
+.monthly-work-published {
+  align-self: center;
+  width: 100%;
+  text-align: center;
+  padding: 2px 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.monthly-work-publish {
+  border: 0;
+  background: transparent;
+  color: var(--color-primary-dark);
+  font-weight: 650;
+  cursor: pointer;
+}
+.monthly-work-publish:disabled { opacity: 0.55; cursor: wait; }
+.monthly-work-published { color: var(--color-success); }
+
+.monthly-work-date {
+  font-size: 12px;
+  color: var(--ink-tertiary, #a89eb8);
+}
+
+.monthly-work-delete {
+  position: absolute;
+  right: 6px;
+  bottom: 8px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(168, 92, 64, 0.18);
+  border-radius: 9px;
+  background: rgba(255, 250, 244, 0.94);
+  color: #A65C43;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(91, 54, 35, 0.08);
+}
+.monthly-work-delete:active { transform: scale(0.94); }
+.monthly-work-delete:focus-visible { outline: 3px solid rgba(200, 131, 99, 0.28); outline-offset: 2px; }

@@ -1,0 +1,164 @@
+.daily-picturebook-wizard {
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 18px 16px 28px;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.dpw-header {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.dpw-header h1 {
+  font-size: 22px;
+  font-weight: 780;
+}
+
+.dpw-header p,
+.dpw-muted {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.dpw-back {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.dpw-back svg {
+  width: 20px;
+  height: 20px;
+}
+
+.dpw-state {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.dpw-panel {
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-card);
+}
+
+.dpw-panel h2 {
+  margin-bottom: 10px;
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.dpw-diary-list,
+.dpw-paragraphs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dpw-diary-option {
+  width: 100%;
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  text-align: left;
+}
+
+.dpw-diary-option.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.dpw-diary-option span {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.dpw-paragraph {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: left;
+}
+
+.dpw-paragraph.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.dpw-paragraph:disabled {
+  cursor: not-allowed;
+}
+
+.dpw-check {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--color-primary-dark);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.dpw-footer {
+  position: sticky;
+  bottom: 0;
+  margin-top: 16px;
+  padding: 12px 0 calc(4px + env(safe-area-inset-bottom));
+  background: var(--color-bg);
+}
+
+.dpw-primary {
+  width: 100%;
+  min-height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: white;
+  font-size: 15px;
+  font-weight: 760;
+}
+
+.dpw-primary:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.dpw-error {
+  margin: 8px 0;
+  padding: 9px 10px;
+  border-radius: var(--radius-md);
+  background: #FBEAEA;
+  color: var(--color-danger-strong);
+  font-size: 13px;
+}

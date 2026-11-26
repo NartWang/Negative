@@ -4,11 +4,16 @@
 - POST /api/transform/nagging/transform   → 一条唠叨 → 3 张回应卡片
 """
 
-from typing import Literal, Optional
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, ConfigDict, Field
 
 from agents.nagging_transformer_agent import transform_nagging
+from auth.dependencies import get_current_user_id, require_same_origin
+from services.generation_errors import (
+    GenerationServiceError,
+    raise_generation_http_error,
+)
 
 
 router = APIRouter()
@@ -58,15 +63,13 @@ MOCK_NAGGING_INBOX = [
 # ---- schemas --------------------------------------------------------------
 
 class NaggingItem(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     id: int
     from_: str = Field(alias="from")
     received_at: str
     kind: str
     text: str
-
-    class Config:
-        populate_by_name = True
-
 
 class TransformRequest(BaseModel):
     nag_id: Optional[int] = None  # if given, look up in inbox
@@ -82,13 +85,19 @@ class TransformResponse(BaseModel):
 # ---- endpoints ------------------------------------------------------------
 
 @router.get("/nagging/inbox")
-async def list_nagging():
+async def list_nagging(
+    _user_id: int = Depends(get_current_user_id),
+):
     """Return the mock inbox of 妈妈的唠叨."""
     return MOCK_NAGGING_INBOX
 
 
 @router.post("/nagging/transform", response_model=TransformResponse)
-async def transform_endpoint(req: TransformRequest):
+async def transform_endpoint(
+    req: TransformRequest,
+    _: None = Depends(require_same_origin),
+    _user_id: int = Depends(get_current_user_id),
+):
     """Turn one 唠叨 into 3 response cards via AI."""
     nag_text: str
     if req.nag_id is not None:
@@ -103,9 +112,7 @@ async def transform_endpoint(req: TransformRequest):
 
     try:
         cards = await transform_nagging(nag_text, relation=req.relation)
-    except ValueError as e:
-        raise HTTPException(status_code=502, detail=f"AI 转化失败：{e}")
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"AI 调用失败：{e}")
+    except GenerationServiceError as exc:
+        raise_generation_http_error(exc, service="AI")
 
     return TransformResponse(nag_text=nag_text, cards=cards)

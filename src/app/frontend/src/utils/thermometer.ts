@@ -21,7 +21,7 @@ const TIERS: { max: number; label: string; color: string }[] = [
   { max: 100, label: '炽热', color: '#E67862' },
 ]
 
-export function labelForScore(score: number): { label: string; color: string } {
+function labelForScore(score: number): { label: string; color: string } {
   const tier = TIERS.find(t => score <= t.max) ?? TIERS[TIERS.length - 1]
   return { label: tier.label, color: tier.color }
 }

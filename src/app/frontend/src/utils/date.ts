@@ -16,17 +16,8 @@ export function parseLocalDate(s: string): Date {
   return new Date(y, (m || 1) - 1, d || 1)
 }
 
-export function isToday(s: string): boolean {
-  return s === getLocalDateStr()
-}
-
 export function addDays(s: string, delta: number): string {
   const d = parseLocalDate(s)
   d.setDate(d.getDate() + delta)
   return getLocalDateStr(d)
-}
-
-export function formatDateLabel(s: string): string {
-  const d = parseLocalDate(s)
-  return `${s}  ${weekdayLabel(d)}`
 }

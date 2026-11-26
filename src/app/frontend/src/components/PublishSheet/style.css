@@ -1,0 +1,87 @@
+.publish-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 0 8px;
+}
+
+.publish-hint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary, #6b6257);
+}
+
+.publish-self {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--bg-soft, #f5f1ea);
+  font-size: 14px;
+}
+
+.publish-self-name {
+  font-weight: 600;
+  color: var(--text-primary, #2e2820);
+}
+
+.publish-self-tag {
+  font-size: 12px;
+  color: var(--text-tertiary, #a39a8b);
+}
+
+.publish-state {
+  padding: 12px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-secondary, #6b6257);
+}
+
+.publish-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-primary, #2e2820);
+}
+
+.publish-row:active {
+  background: var(--bg-soft, #f5f1ea);
+}
+
+.publish-row input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent, #c17f59);
+}
+
+.publish-error {
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #fdeceb;
+  color: #b3261e;
+  font-size: 13px;
+}
+
+.publish-submit {
+  margin-top: 4px;
+  padding: 13px 16px;
+  border: none;
+  border-radius: 14px;
+  background: var(--accent, #c17f59);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.publish-submit:disabled {
+  opacity: 0.55;
+  cursor: default;
+}

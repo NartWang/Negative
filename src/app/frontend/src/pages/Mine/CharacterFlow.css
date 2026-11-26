@@ -1,0 +1,732 @@
+.flow-page {
+  position: relative;
+  min-height: 100%;
+  padding: 12px 16px 108px;
+  overflow-x: hidden;
+}
+
+/*
+ * Character picker owns the whole viewport: header and CTA are pinned, only the
+ * character grid scrolls. `position: fixed` cannot be used for the CTA because
+ * `.tab-fade` keeps a transform applied (animation fill-mode: both), which makes
+ * it the containing block for fixed children — the bar would then sit at the
+ * bottom of the *page* and only appear after scrolling all the way down.
+ *
+ * Instead the page is locked to exactly the visible area (viewport minus the tab
+ * bar): nothing outside it can scroll, so the last flex child — the CTA bar —
+ * is always the bottom edge of the screen. The grid is the only flexible child,
+ * so on short screens it shrinks rather than pushing the bar out of sight.
+ */
+.tab-fade:has(.flow-page.is-picker) { height: 100%; }
+
+.flow-page.is-picker {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - var(--tab-bar-height));
+  max-height: calc(100dvh - var(--tab-bar-height));
+  padding-bottom: 0;
+  overflow: hidden;
+}
+
+/* Back button, title and subtitle stay put while the grid scrolls. */
+.flow-page.is-picker .m-topbar { flex: none; }
+
+/* ---------- entry (screen 01) ---------- */
+
+.flow-page.is-entry .m-topbar-title {
+  font-size: 22px;
+}
+
+.flow-entry {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 6px;
+}
+
+.leaf-left { top: 4px; left: -14px; width: 54px; height: 82px; transform: rotate(-14deg); }
+.leaf-right { right: -16px; bottom: 74px; width: 46px; height: 70px; transform: rotate(160deg); }
+
+.showcase-card {
+  position: relative;
+  padding: 26px 14px 18px;
+  border: 1px solid var(--m-line);
+  border-radius: 18px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.5) 0 2px, rgba(0, 0, 0, 0) 2px 5px),
+    var(--m-card);
+  box-shadow: var(--m-shadow-lift);
+  transform: rotate(-1.4deg);
+}
+
+.showcase-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  animation: fade-in 420ms ease-out both;
+}
+
+.showcase-sprite { display: block; aspect-ratio: 3 / 4; }
+
+/* Polaroid sticker pinned to the corner of the showcase card. */
+.showcase-polaroid {
+  position: absolute;
+  top: -18px;
+  right: 8px;
+  display: block;
+  width: 62px;
+  height: 74px;
+  padding: 5px 5px 14px;
+  border-radius: 3px;
+  background: #FFFDF8;
+  box-shadow: 0 6px 14px rgba(120, 86, 58, 0.2);
+  transform: rotate(7deg);
+}
+
+.showcase-polaroid > span { position: absolute; display: block; }
+.showcase-polaroid .polaroid-sky {
+  inset: 5px 5px 19px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #CFE0E6 0%, #E7EAD4 100%);
+}
+.showcase-polaroid .polaroid-hill {
+  right: 5px;
+  bottom: 19px;
+  left: 5px;
+  height: 18px;
+  background: #A8B98C;
+  border-radius: 2px 2px 0 0;
+}
+.showcase-polaroid .polaroid-house {
+  right: 16px;
+  bottom: 24px;
+  width: 20px;
+  height: 14px;
+  background: #C08A5E;
+  box-shadow: 0 -6px 0 -2px #8C5B3A;
+}
+
+.showcase-heart { position: absolute; color: rgba(192, 102, 60, 0.28); }
+.showcase-heart svg { width: 100%; height: 100%; fill: currentColor; stroke: none; }
+.showcase-heart-a { top: 10px; left: 46%; width: 18px; height: 18px; }
+.showcase-heart-b { right: 22px; bottom: 12px; width: 13px; height: 13px; }
+
+.route-block { display: flex; flex-direction: column; gap: 8px; }
+
+/* Shown only when replacing: who is on stage right now. */
+.current-star {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--m-line);
+  border-radius: var(--m-radius-card);
+  background: var(--m-card-alt);
+}
+
+.current-star-art {
+  display: block;
+  width: 72px;
+  aspect-ratio: 1 / 1;
+}
+
+.current-star-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.current-star-copy small { color: var(--m-text-2); font-size: 11px; }
+.current-star-copy strong {
+  font-family: var(--m-serif);
+  font-size: 20px;
+  letter-spacing: 0.06em;
+  color: var(--m-text);
+}
+.current-star-copy em {
+  align-self: flex-start;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--m-accent-soft);
+  color: var(--m-accent-deep);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.route-card {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 18px 16px;
+  border: 1px solid var(--m-line);
+  border-radius: var(--m-radius-card);
+  background: var(--m-card);
+  box-shadow: var(--m-shadow);
+  text-align: left;
+}
+
+.route-icon {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--m-accent-soft);
+  color: var(--m-accent);
+}
+
+.route-icon svg { width: 26px; height: 26px; }
+
+.route-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.route-copy strong {
+  font-family: var(--m-serif);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--m-text);
+}
+.route-copy small { color: var(--m-text-2); font-size: 12px; }
+
+.route-go {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--m-accent);
+  color: #FFF8F1;
+}
+
+.route-go svg { width: 18px; height: 18px; stroke-width: 2.6; }
+
+.route-privacy {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 0 6px;
+  color: var(--m-text-2);
+  font-size: 12px;
+}
+
+.route-privacy svg { flex: none; width: 13px; height: 13px; color: var(--m-accent); }
+
+.flow-footer {
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--m-line);
+}
+
+
+.flow-later {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 44px;
+  color: var(--m-text);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.flow-later svg { width: 16px; height: 16px; }
+
+/* ---------- preset grid (screen 02) ---------- */
+
+.flow-preset {
+  /* Two cards per row, sized by ratio like 02_预设角色选择页 — the artwork needs
+     to be big enough to recognise the character at a glance. */
+  --pb-gap: 12px;
+  --pb-max-width: 480px;
+
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  gap: 10px;
+}
+
+.preset-head { flex: none; display: flex; flex-direction: column; gap: 8px; }
+
+/*
+ * A window exactly two rows tall, i.e. four characters — the header above and the
+ * call to action below never move. Cards are ratio-sized, so the height has to be
+ * derived from the layout width: column = (width - page padding - gap) / 2 and
+ * each card is 4/3 of that, which reduces to the expression below. The width is
+ * capped at the app's phone width so a wide desktop window does not blow the
+ * cards up beyond the two rows that fit.
+ *
+ * Categories holding four characters or fewer simply do not overflow, so no
+ * scrollbar is drawn for them — `scrollbar-gutter` is deliberately left at its
+ * default so those categories keep the full width too.
+ */
+.preset-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: calc((min(100vw, var(--pb-max-width)) - 50px) * 4 / 3 + var(--pb-gap) + 14px);
+  padding: 2px 2px 12px 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  /* Mobile browsers hide scrollbars by default; this page needs the affordance. */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(192, 102, 60, 0.5) rgba(120, 86, 58, 0.08);
+}
+
+.preset-scroll::-webkit-scrollbar { width: 6px; }
+
+.preset-scroll::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(120, 86, 58, 0.08);
+}
+
+.preset-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(192, 102, 60, 0.5);
+}
+
+.preset-scroll::-webkit-scrollbar-thumb:active { background: var(--m-accent); }
+
+.category-row {
+  display: flex;
+  gap: 8px;
+  margin: 0 -16px;
+  padding: 2px 16px 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.category-row::-webkit-scrollbar { display: none; }
+
+.category-chip {
+  flex: none;
+  min-height: 34px;
+  padding: 0 16px;
+  border: 1px solid var(--m-line);
+  border-radius: 999px;
+  background: var(--m-card);
+  color: var(--m-text-2);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.category-chip.active {
+  border-color: var(--m-accent);
+  background: var(--m-accent);
+  color: #FFF8F1;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--pb-gap, 12px);
+  max-width: var(--pb-max-width, 480px);
+  margin: 0 auto;
+}
+
+.preset-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  aspect-ratio: 3 / 4;
+  padding: 14px 10px 16px;
+  border: 2px solid var(--m-line-soft);
+  border-radius: 18px;
+  background: var(--m-card);
+  box-shadow: var(--m-shadow);
+}
+
+.preset-card.active {
+  border-color: var(--m-accent);
+  background: #FFFDF9;
+  box-shadow: var(--m-shadow-lift);
+}
+
+.preset-card .preset-tick { top: 8px; right: 8px; width: 26px; height: 26px; }
+.preset-card .preset-tick svg { width: 15px; height: 15px; }
+
+.preset-art {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+}
+
+.preset-name {
+  font-family: var(--m-serif);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  color: var(--m-text);
+}
+
+.preset-trait {
+  max-width: 100%;
+  overflow: hidden;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--m-accent-soft);
+  color: var(--m-accent-deep);
+  font-size: 11px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * Hovers over the bottom edge of the picker and never moves: who is picked on
+ * the left, the way forward on the right. `margin-top: auto` keeps it on the
+ * bottom edge when the two-row window leaves space over, `sticky` keeps it there
+ * even if an ancestor ever regains a scrollbar.
+ */
+.flow-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 6;
+  flex: none;
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  margin: auto -16px 0;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--m-line);
+  background: rgba(251, 246, 238, 0.96);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 -8px 18px rgba(120, 86, 58, 0.12);
+}
+
+/* Nothing picked yet: the call to action takes the whole width. */
+.flow-bar:not(:has(.flow-bar-picked)) { grid-template-columns: minmax(0, 1fr); }
+
+.flow-bar-picked {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--m-text-2);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flow-bar-picked strong {
+  font-family: var(--m-serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--m-accent-deep);
+}
+
+.flow-bar-cta { width: 100%; min-height: 52px; font-size: 15px; }
+
+/* ---------- photo route ---------- */
+
+.flow-photo { display: flex; flex-direction: column; gap: 12px; }
+
+.upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  padding: 16px;
+  overflow: hidden;
+  border: 1.5px dashed var(--m-line);
+  border-radius: var(--m-radius-card);
+  background: var(--m-card);
+  color: var(--m-text-2);
+}
+
+.upload-area.filled { padding: 0; border-style: solid; }
+.upload-area img { width: 100%; height: 100%; object-fit: cover; }
+.upload-area strong { color: var(--m-text); font-size: 16px; }
+.upload-area small { font-size: 12px; }
+
+.upload-icon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--m-accent-soft);
+  color: var(--m-accent);
+}
+
+.upload-icon svg { width: 24px; height: 24px; }
+
+.photo-replace { min-height: 36px; margin-top: -4px; }
+
+/* Staged generation feedback (创建角色界面规格.md): explicit phases, no spinner. */
+.generate-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 16px;
+  border: 1px solid var(--m-line);
+  border-radius: var(--m-radius-card);
+  background: var(--m-card);
+  text-align: center;
+}
+
+.generate-progress strong {
+  font-family: var(--m-serif);
+  font-size: 17px;
+  letter-spacing: 0.06em;
+  color: var(--m-text);
+}
+
+.generate-progress small { color: var(--m-text-2); font-size: 12px; line-height: 1.6; }
+
+.generate-spark {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--m-accent-soft);
+  color: var(--m-accent);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.generate-spark svg { width: 22px; height: 22px; fill: currentColor; stroke: none; }
+
+.generate-steps {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 2px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.generate-steps li {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--m-card-alt);
+  color: var(--m-text-2);
+  font-size: 11px;
+}
+
+.generate-steps li.done {
+  background: var(--m-accent-soft);
+  color: var(--m-accent-deep);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .generate-spark { animation: none; }
+}
+
+/* ---------- confirm (screen 03) ---------- */
+
+.flow-confirm { display: flex; flex-direction: column; gap: 12px; }
+
+.scene-card {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--m-line);
+  border-radius: var(--m-radius-card);
+  background: linear-gradient(180deg, #EFE3CF 0%, #E3D2B8 100%);
+  box-shadow: var(--m-shadow);
+}
+
+.scene-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 3;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(255, 252, 245, 0.9);
+  color: var(--m-text);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.scene { position: absolute; inset: 0; }
+.scene > span { position: absolute; display: block; }
+
+/*
+ * Painted scene for the current form, laid over the CSS room. The artwork is
+ * square and the card is 4:3, so it is cropped towards the lower half where the
+ * desk / ground and the character live.
+ */
+.scene-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 68%;
+}
+
+/* window with soft daylight */
+.scene .scene-window {
+  top: 8%;
+  left: 6%;
+  width: 46%;
+  height: 52%;
+  border: 6px solid #C6A277;
+  border-radius: 6px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0)),
+    linear-gradient(160deg, #CFE3D2 0%, #E8EFCF 55%, #F6F2DC 100%);
+  box-shadow: 0 0 34px 12px rgba(255, 246, 214, 0.7);
+}
+
+.scene .scene-window::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 5px;
+  background: #C6A277;
+  transform: translateX(-50%);
+}
+
+/* potted plant on the left */
+.scene .scene-plant {
+  bottom: 30%;
+  left: 4%;
+  width: 16%;
+  height: 16%;
+  border-radius: 4px 4px 8px 8px;
+  background: #B9784E;
+  box-shadow:
+    -8px -18px 0 -6px #7E9A63,
+    2px -26px 0 -6px #8FA86E,
+    12px -16px 0 -7px #6F8B58;
+}
+
+/* shelf on the right */
+.scene .scene-shelf {
+  top: 14%;
+  right: 4%;
+  width: 34%;
+  height: 8px;
+  border-radius: 3px;
+  background: #B98C60;
+  box-shadow:
+    6px -14px 0 -2px #9C6B45,
+    26px -18px 0 -3px #7E9A63;
+}
+
+/* desk plane */
+.scene .scene-desk {
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 30%;
+  background: linear-gradient(180deg, #C79A6B 0%, #B07F52 100%);
+  box-shadow: inset 0 3px 0 rgba(255, 240, 214, 0.45);
+}
+
+/* open notebook lying on the desk */
+.scene .scene-book {
+  right: 6%;
+  bottom: 6%;
+  width: 40%;
+  height: 18%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #FBF4E4 0%, #F3E7D0 48%, #FBF4E4 100%);
+  box-shadow: 0 3px 8px rgba(90, 62, 40, 0.25);
+  transform: rotate(-3deg);
+}
+
+.scene .scene-book::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background: rgba(150, 116, 82, 0.5);
+}
+
+/* pencil cup */
+.scene .scene-cup {
+  right: 4%;
+  bottom: 26%;
+  width: 9%;
+  height: 11%;
+  border-radius: 3px 3px 5px 5px;
+  background: #A9C0D2;
+  box-shadow:
+    -3px -10px 0 -6px #C46B52,
+    3px -12px 0 -6px #D9A85C;
+}
+
+.scene-actor {
+  position: absolute;
+  bottom: 20%;
+  left: 50%;
+  z-index: 2;
+  width: 34%;
+  height: 62%;
+  transform: translateX(-50%);
+}
+
+.scene-actor img,
+.scene-actor .pixel-sprite {
+  filter: drop-shadow(0 6px 6px rgba(90, 62, 40, 0.28));
+}
+
+.confirm-question {
+  margin: 4px 0 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--m-text);
+}
+
+.confirm-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.confirm-action {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border: 2px solid transparent;
+  border-radius: var(--m-radius-inner);
+  background: var(--m-card-alt);
+  color: var(--m-text-2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.confirm-action.active {
+  border-color: var(--m-accent);
+  background: #FFFDF9;
+  color: var(--m-text);
+}
+
+/* Each chip previews its own form inside its own scene. */
+.confirm-action-art {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 10px;
+  background-color: var(--m-card);
+  background-position: 50% 72%;
+  background-size: cover;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .showcase-row { animation: none; }
+  .preset-card.active { transform: none; }
+}

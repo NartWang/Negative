@@ -1,0 +1,195 @@
+.work-save-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(18, 28, 38, 0.42);
+}
+
+.work-save-sheet {
+  width: min(100%, 520px);
+  max-height: min(86vh, 760px);
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 12px 20px calc(20px + env(safe-area-inset-bottom));
+  border: 1px solid var(--color-border);
+  border-radius: 18px 18px 8px 8px;
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-lg);
+  color: var(--color-text);
+}
+
+.work-save-handle {
+  width: 42px;
+  height: 4px;
+  margin: 0 auto 20px;
+  border-radius: 999px;
+  background: #c7d1dc;
+}
+
+.work-save-kicker {
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+}
+
+.work-save-sheet h2 {
+  margin: 5px 0 16px;
+  font-size: 24px;
+  font-weight: 760;
+  line-height: 1.2;
+}
+
+.work-save-preview {
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+}
+
+.work-save-preview-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.work-save-preview-meta span {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.work-save-preview-meta strong {
+  font-size: 17px;
+  line-height: 1.4;
+}
+
+.work-save-preview > p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 12px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.65;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
+.work-save-images {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.work-save-images.single { grid-template-columns: 1fr; }
+.work-save-images.single img { aspect-ratio: 4 / 3; }
+
+.work-save-images img {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
+
+.work-save-image-choice {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.work-save-image-choice.selected { border-color: var(--color-primary); }
+.work-save-image-choice.disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+.work-save-image-choice input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.work-save-image-choice span {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  background: rgba(21, 32, 43, 0.78);
+  color: #fff;
+  font-size: 13px;
+}
+
+.work-save-image-choice em {
+  position: absolute;
+  inset-inline: 6px;
+  bottom: 6px;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  background: rgba(21, 32, 43, 0.78);
+  color: #fff;
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1.35;
+}
+
+.work-save-note {
+  margin: 13px 2px 18px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.work-save-error {
+  margin: -5px 0 14px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--color-danger-strong);
+  background: #fff3f2;
+  color: var(--color-danger-strong);
+  font-size: 13px;
+}
+
+.work-save-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 10px;
+}
+
+.work-save-actions button {
+  min-height: 46px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.work-save-cancel {
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+}
+
+.work-save-confirm {
+  border-color: var(--color-primary) !important;
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.work-save-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
+}
+
+@media (max-width: 360px) {
+  .work-save-backdrop { padding: 8px; }
+  .work-save-sheet { padding-inline: 16px; }
+}

@@ -1,0 +1,947 @@
+.resonance-page {
+  min-height: 100%;
+  padding: 0 0 24px;
+}
+
+.resonance-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(239, 232, 221, 0.9);
+  backdrop-filter: blur(14px) saturate(115%);
+  padding: 14px 18px 0;
+}
+
+.resonance-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.resonance-titlebar h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--color-text, #2e2820);
+}
+
+.resonance-bell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-bg-card, #fff);
+  color: var(--color-text, #2e2820);
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(46, 40, 32, 0.08));
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+}
+
+.resonance-bell svg {
+  width: 19px;
+  height: 19px;
+}
+
+.resonance-tabs {
+  display: flex;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--bg-soft, #efe9df);
+  border: 1px solid rgba(216, 190, 158, 0.55);
+}
+
+.resonance-tabs [role='tab'] {
+  flex: 1;
+  padding: 9px 0;
+  border: none;
+  border-radius: 11px;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-secondary, #6b6257);
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.resonance-tabs [role='tab'].active {
+  background: var(--color-bg-card, #fff);
+  color: var(--accent-dark);
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(46, 40, 32, 0.1));
+}
+
+/* Feed */
+.resonance-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px 16px 0;
+}
+
+.resonance-feed-layout { display: flex; flex-direction: column; }
+.resonance-feed-section-title {
+  margin: 32px 18px 0;
+  font-size: 18px;
+  font-weight: 760;
+  color: var(--color-text);
+}
+.resonance-feed-lowered {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+  margin-top: 10px;
+}
+.resonance-empty-persistent { padding-bottom: 0; }
+
+.resonance-feed-lowered .resonance-card {
+  min-width: 0;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 15px;
+}
+.resonance-feed-lowered .resonance-card-head { gap: 7px; }
+.resonance-feed-lowered .resonance-avatar { width: 30px; height: 30px; }
+.resonance-feed-lowered .resonance-card-author { font-size: 13px; }
+.resonance-feed-lowered .resonance-card-meta time { font-size: 10px; }
+.resonance-feed-lowered .resonance-card-menu { width: 26px; height: 26px; }
+.resonance-feed-lowered .resonance-card-menu svg { width: 17px; height: 17px; }
+.resonance-feed-lowered .resonance-card-body h3 { font-size: 14px; }
+.resonance-feed-lowered .resonance-card-image {
+  aspect-ratio: 4 / 3;
+  max-height: none;
+  object-fit: cover;
+}
+.resonance-feed-lowered .resonance-card-text {
+  font-size: 12px;
+  line-height: 1.5;
+  -webkit-line-clamp: 2;
+}
+.resonance-feed-lowered .resonance-card-style { font-size: 10px; }
+.resonance-feed-lowered .resonance-card-foot { gap: 6px; }
+.resonance-feed-lowered .resonance-like { padding: 4px 8px; font-size: 11px; }
+.resonance-feed-lowered .resonance-likes { font-size: 11px; }
+.resonance-feed-lowered .resonance-comments { display: none; }
+.resonance-feed-lowered .resonance-load-more { grid-column: 1 / -1; }
+
+.resonance-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 18px;
+  background: var(--color-bg-card, #fff);
+  box-shadow: var(--shadow-sm, 0 1px 4px rgba(46, 40, 32, 0.07));
+  border: 1px solid rgba(234, 219, 197, 0.72);
+}
+
+.resonance-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.resonance-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.resonance-avatar-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft, #f0dfd2);
+  color: var(--accent, #c17f59);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.resonance-card-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.resonance-card-author {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text, #2e2820);
+}
+
+.resonance-card-meta time {
+  font-size: 12px;
+  color: var(--text-tertiary, #a39a8b);
+}
+
+.resonance-card-menu {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-secondary, #6b6257);
+  cursor: pointer;
+}
+
+.resonance-card-menu:active {
+  background: var(--bg-soft, #efe9df);
+}
+
+.resonance-card-menu svg {
+  width: 20px;
+  height: 20px;
+}
+
+.resonance-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.resonance-card-body h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text, #2e2820);
+}
+
+.resonance-card-image {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+  max-height: 320px;
+}
+
+.resonance-media-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  width: 100%;
+  border: 1px dashed var(--border-subtle, #d8cec0);
+  border-radius: 12px;
+  background: var(--bg-soft, #efe9df);
+  color: var(--text-tertiary, #a39a8b);
+  font-size: 13px;
+}
+
+.resonance-card-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-secondary, #6b6257);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.resonance-card-style {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 3px 9px;
+  border: 1px solid rgba(177, 112, 78, 0.2);
+  border-radius: 999px;
+  background: rgba(239, 213, 194, 0.42);
+  color: var(--color-primary-dark);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.resonance-card-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 24px;
+}
+
+.resonance-like {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: none;
+  border-radius: 999px;
+  background: var(--bg-soft, #efe9df);
+  color: var(--text-secondary, #6b6257);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.resonance-like svg {
+  width: 15px;
+  height: 15px;
+}
+
+.resonance-like.liked {
+  background: #f7e3e0;
+  color: #c05348;
+}
+
+.resonance-likes {
+  font-size: 13px;
+  color: var(--text-secondary, #6b6257);
+}
+
+.resonance-inline-error {
+  font-size: 12px;
+  color: #b3261e;
+}
+
+/* Comments */
+.resonance-comments {
+  border-top: 1px solid var(--border-soft, #efe9df);
+  padding-top: 8px;
+}
+
+.resonance-comment-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.resonance-comment-list li {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--color-text, #2e2820);
+}
+
+.resonance-comment-author {
+  font-weight: 700;
+  color: var(--accent-dark, #a9663f);
+}
+
+.resonance-comment-reply {
+  color: var(--text-tertiary, #a39a8b);
+}
+
+.resonance-comment-reply-button {
+  margin-left: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary, #a39a8b);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.resonance-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.resonance-composer-reply {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary, #6b6257);
+}
+
+.resonance-composer-reply button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.resonance-composer-row {
+  display: flex;
+  gap: 8px;
+}
+
+.resonance-composer-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1px solid var(--border-soft, #e7dfd2);
+  border-radius: 999px;
+  background: var(--bg-soft, #f7f3ec);
+  font-size: 13.5px;
+  color: var(--color-text, #2e2820);
+}
+
+.resonance-composer-row input:focus {
+  outline: none;
+  border-color: var(--accent, #c17f59);
+}
+
+.resonance-composer-row button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent, #c17f59);
+  color: #fff;
+  cursor: pointer;
+}
+
+.resonance-composer-row button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.resonance-composer-row button svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* States */
+.resonance-state,
+.resonance-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.resonance-state p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-secondary, #6b6257);
+}
+
+.resonance-state button {
+  padding: 9px 18px;
+  border: none;
+  border-radius: 12px;
+  background: var(--accent, #c17f59);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.resonance-empty p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text, #2e2820);
+}
+
+.resonance-empty span {
+  font-size: 13px;
+  color: var(--text-tertiary, #a39a8b);
+}
+
+.resonance-load-more {
+  align-self: center;
+  padding: 9px 22px;
+  border: none;
+  border-radius: 999px;
+  background: var(--color-bg-card, #fff);
+  color: var(--text-secondary, #6b6257);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+/* Collections */
+.resonance-collections {
+  padding: 18px 16px 0;
+}
+
+.resonance-collections h2 {
+  margin: 0 0 14px;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--color-text, #2e2820);
+}
+
+.resonance-collections-empty {
+  padding: 40px 24px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-tertiary, #a39a8b);
+}
+
+.resonance-collection-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.resonance-collection-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 16px;
+  background: var(--color-bg-card, #fff);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  text-align: left;
+}
+
+.resonance-collection-card-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 38px;
+}
+
+.resonance-collection-card-head > svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  color: var(--text-tertiary, #a39a8b);
+}
+
+.resonance-collection-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.resonance-collection-cover {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  border-radius: 13px;
+  object-fit: cover;
+}
+
+.resonance-collection-style {
+  flex: none;
+  padding: 3px 8px;
+  border: 1px solid rgba(177, 112, 78, 0.18);
+  border-radius: 999px;
+  background: rgba(239, 213, 194, 0.46);
+  color: var(--color-primary-dark);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.resonance-collection-title {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  color: var(--color-text, #2e2820);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resonance-collection-avatar.placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft, #f0dfd2);
+  color: var(--accent, #c17f59);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.resonance-collection-main {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.resonance-collection-main strong {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text, #2e2820);
+  white-space: nowrap;
+}
+
+.resonance-collection-main span {
+  font-size: 12.5px;
+  color: var(--text-tertiary, #a39a8b);
+}
+
+.resonance-collection-latest {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 3px;
+}
+
+.resonance-collection-latest span {
+  color: var(--color-text, #2e2820);
+  font-weight: 600;
+}
+
+.resonance-collection-latest small {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text-secondary, #6b6257);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resonance-collection-latest em {
+  align-self: flex-start;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(239, 213, 194, 0.48);
+  color: var(--color-primary-dark);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 650;
+}
+
+.resonance-collection-card > svg {
+  width: 18px;
+  height: 18px;
+  color: var(--text-tertiary, #a39a8b);
+  flex-shrink: 0;
+}
+
+/* Collection detail */
+.resonance-collection-detail {
+  padding: 18px 16px 0;
+}
+
+.resonance-collection-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.resonance-collection-detail-head h2 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--color-text, #2e2820);
+  flex: 1;
+}
+
+.resonance-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-bg-card, #fff);
+  color: var(--color-text, #2e2820);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.resonance-back svg {
+  width: 18px;
+  height: 18px;
+}
+
+.resonance-order-toggle {
+  padding: 7px 14px;
+  border: none;
+  border-radius: 999px;
+  background: var(--bg-soft, #efe9df);
+  color: var(--text-secondary, #6b6257);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.resonance-year-group {
+  margin-bottom: 20px;
+}
+
+.resonance-year-group h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-tertiary, #a39a8b);
+  letter-spacing: 0.04em;
+}
+
+.resonance-year-group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.resonance-collection-work {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 14px;
+  background: var(--color-bg-card, #fff);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  text-align: left;
+}
+
+.resonance-collection-work img {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.resonance-collection-work span {
+  flex: 1;
+  min-width: 0;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--color-text, #2e2820);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resonance-collection-work time {
+  font-size: 12px;
+  color: var(--text-tertiary, #a39a8b);
+  flex-shrink: 0;
+}
+
+/* Published detail */
+.resonance-detail {
+  min-height: 100%;
+  padding: 14px 18px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.resonance-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.resonance-detail-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.resonance-detail-meta span {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text, #2e2820);
+}
+
+.resonance-detail-meta time {
+  font-size: 12px;
+  color: var(--text-tertiary, #a39a8b);
+}
+
+.resonance-detail h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-text, #2e2820);
+}
+
+.resonance-detail-assets {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.resonance-detail-assets img {
+  width: 100%;
+  border-radius: 14px;
+  object-fit: cover;
+}
+
+.resonance-detail-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--color-text, #2e2820);
+}
+
+/* Post menu */
+.post-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.post-menu-item {
+  padding: 13px 14px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text, #2e2820);
+  text-align: left;
+  cursor: pointer;
+}
+
+.post-menu-item:active {
+  background: var(--bg-soft, #efe9df);
+}
+
+.post-menu-item.danger {
+  color: #b3261e;
+}
+
+.post-menu-confirm p {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary, #6b6257);
+}
+
+.post-menu-error {
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #fdeceb;
+  color: #b3261e;
+  font-size: 13px;
+}
+
+.post-menu-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.post-menu-actions button {
+  padding: 9px 16px;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--bg-soft, #efe9df);
+  color: var(--color-text, #2e2820);
+}
+
+.post-menu-actions button.danger {
+  background: #b3261e;
+  color: #fff;
+}
+
+.resonance-card:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent, #5f7f67) 45%, transparent);
+  outline-offset: 3px;
+}
+
+.resonance-locate-state {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--bg-soft, #efe9df);
+  color: var(--text-secondary, #6b6257);
+  font-size: 14px;
+}
+
+.resonance-locate-state[role="alert"] {
+  background: #fdeceb;
+  color: #b3261e;
+}
+
+/* Interaction summary */
+.interaction-summary ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.interaction-summary li button {
+  width: 100%;
+  padding: 11px 12px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  font-size: 14px;
+  color: var(--color-text, #2e2820);
+  text-align: left;
+  cursor: pointer;
+}
+
+.interaction-summary li button:active {
+  background: var(--bg-soft, #efe9df);
+}
+
+.interaction-summary-actor {
+  font-weight: 700;
+}
+
+.interaction-summary-work {
+  color: var(--text-tertiary, #a39a8b);
+}
+
+.interaction-summary-empty {
+  padding: 24px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-tertiary, #a39a8b);
+}
+
+/* Narrow screens: keep composer and menu from overflowing */
+@media (max-width: 360px) {
+  .resonance-feed,
+  .resonance-collections,
+  .resonance-collection-detail {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .resonance-composer-row input {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+}

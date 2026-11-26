@@ -1,4 +1,4 @@
-﻿# OS
+# OS
 .DS_Store
 Thumbs.db
 
@@ -9,14 +9,19 @@ Thumbs.db
 *.swo
 
 # Claude Code / AI tools
-.agents/
 .claude/
 .codex/
 .superpowers/
+.worktrees/
 
 # Python
 __pycache__/
+.pytest_cache/
 *.pyc
+
+# Raw AI generations cached by scripts/generate_character_actions.py.
+# Only the encoded webp assets under public/characters are committed.
+scripts/.cache/
 *.pyo
 .env
 .venv/
@@ -26,14 +31,24 @@ venv/
 node_modules/
 dist/
 .next/
-.vite/
 
 # Sandbox experiments
 _sandbox/
 
-# SQLite / local runtime data
+# SQLite
 *.db
-*.db-*
 *.sqlite3
+data/*.db*
+src/engine/data/*.db*
+
+# 绘本视频成片与分镜（单条 8~20MB，只作为运行时产物）
+src/engine/data/videos/
+
+# Local tooling files and runtime data
+﻿# OS
+.agents/
+.vite/
+*.db-*
 *.sqlite3-*
 src/engine/data/uploads/
+*.tsbuildinfo

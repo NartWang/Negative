@@ -2,43 +2,95 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  display: flex;
-  align-items: center;
-  gap: 4px;
   padding: 10px 14px calc(10px + env(safe-area-inset-top));
-  background: rgba(250, 248, 245, 0.86);
-  backdrop-filter: blur(8px);
+  background: rgba(239, 232, 221, 0.88);
+  backdrop-filter: blur(14px) saturate(115%);
   border-bottom: 1px solid var(--color-border);
 }
 
+.date-bar-grid {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr) 68px;
+  align-items: center;
+  gap: 4px;
+  min-height: 52px;
+}
+
+.date-bar-side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.date-bar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  height: 48px;
+}
+
 .date-arrow {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
+  flex: none;
   border-radius: 50%;
   background: var(--color-bg-card);
   color: var(--color-primary-dark);
-  font-size: 20px;
+  font-size: 22px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(234, 219, 197, 0.9);
 }
 
 .date-center {
-  flex: 1;
-  text-align: center;
-  line-height: 1.15;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 108px;
+  min-height: 46px;
+  gap: 3px;
+  line-height: 1;
+  padding: 3px 10px 2px;
+  border-radius: 10px;
 }
 
 .date-text {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 650;
   color: var(--color-text);
 }
 
 .date-week {
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--color-text-secondary);
+}
+
+.date-notebook-btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--color-primary-dark);
+  padding: 4px 6px;
+  border-radius: 10px;
+}
+
+.date-notebook-text {
+  font-size: 11px;
+}
+
+.date-bar-below {
+  display: flex;
+  justify-content: center;
+  margin-top: 6px;
 }
 
 .date-today-btn {
@@ -48,5 +100,3 @@
   padding: 5px 10px;
   border-radius: 999px;
 }
-
-.date-bar-spacer { flex: 1; }

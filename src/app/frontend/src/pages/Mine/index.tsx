@@ -1,324 +1,449 @@
 import { useEffect, useState } from 'react'
-import { profileApi, statsApi, exportApi, emailApi, shareApi } from '../../api/client'
-import type { Profile, Stats, EmotionMode, DrawStyle, EmailConfig } from '../../types'
+import {
+  characterApi,
+  profileApi,
+  storyApi,
+  subscriptionsApi,
+} from '../../api/client'
+import type {
+  CharacterProfile,
+  Profile,
+  Subscription,
+} from '../../types'
 import { useToast } from '../../contexts/ToastContext'
-import ProfileHeader from '../../components/ProfileHeader'
-import StatCard from '../../components/StatCard'
-import NaggingSheet from '../../components/NaggingSheet'
+import { useAuth } from '../../contexts/AuthContext'
+import BottomSheet from '../../components/BottomSheet'
+import PixelSprite from '../../components/PixelSprite'
+import { Check, ChevronRight, Pencil } from '../../components/Icon'
+import CharacterFlow from './CharacterFlow'
+import {
+  ACTION_LABELS,
+  actionUrl,
+  presetOf,
+  sceneUrl,
+  type ActionKey,
+} from './characterPresets'
+import './theme.css'
 import './style.css'
 
-const EMOTION_LABELS: Record<EmotionMode, string> = {
-  real: '真实传达', warm: '温暖滤镜', humor: '幽默轻松',
-  poetic: '诗意文艺', custom: '自定义',
-}
-const STYLE_LABELS: Record<DrawStyle, string> = {
-  ghibli: '治愈插画', watercolor: '水彩日记', grid4: '四宫格',
-  comic: '叙事漫画', pixel: '像素复古', custom: '自定义',
-}
+type Sheet = 'nickname' | 'relations' | 'account'
 
-const EMOTION_OPTIONS: { key: EmotionMode; label: string; desc: string }[] = [
-  { key: 'real', label: '真实传达', desc: '如实呈现，柔和表达' },
-  { key: 'warm', label: '温暖滤镜', desc: '重心在积极面，让对方安心' },
-  { key: 'humor', label: '幽默轻松', desc: '把辛苦讲成段子' },
-  { key: 'poetic', label: '诗意文艺', desc: '日常升华成散文' },
-  { key: 'custom', label: '自定义', desc: '你来定义风格' },
-]
-const STYLE_OPTIONS: { key: DrawStyle; label: string; desc: string }[] = [
-  { key: 'ghibli', label: '治愈插画', desc: '吉卜力感' },
-  { key: 'watercolor', label: '水彩日记', desc: '手绘水彩风' },
-  { key: 'grid4', label: '四宫格', desc: '手绘线条' },
-  { key: 'comic', label: '叙事漫画', desc: '分镜故事' },
-  { key: 'pixel', label: '像素复古', desc: '8-bit 怀旧' },
-  { key: 'custom', label: '自定义', desc: '你来定义画面感' },
-]
-
-function daysBetween(iso: string): number {
-  const start = new Date(iso)
-  if (isNaN(start.getTime())) return 1
-  const ms = Date.now() - start.getTime()
-  return Math.max(1, Math.floor(ms / 86400000) + 1)
+interface Props {
+  userId?: number
+  /** Jump to the stories tab so the character can star in a new picture book. */
+  onGoStories?: () => void
 }
 
-export default function Mine() {
+export default function Mine({ onGoStories }: Props) {
   const toast = useToast()
+  const { user, logout } = useAuth()
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [stats, setStats] = useState<Stats | null>(null)
-  const [emotionMode, setEmotionMode] = useState<EmotionMode>(
-    (localStorage.getItem('emotionMode') as EmotionMode) || 'warm'
-  )
-  const [drawStyle, setDrawStyle] = useState<DrawStyle>(
-    (localStorage.getItem('drawStyle') as DrawStyle) || 'ghibli'
-  )
-  const [reminderTime, setReminderTime] = useState(localStorage.getItem('reminderTime') || '21:00')
-  const [showEmotion, setShowEmotion] = useState(false)
-  const [showStyle, setShowStyle] = useState(false)
-  const [customEmotion, setCustomEmotion] = useState(localStorage.getItem('customEmotion') || '')
-  const [customDraw, setCustomDraw] = useState(localStorage.getItem('customDraw') || '')
+  const [character, setCharacter] = useState<CharacterProfile | null>(null)
+  const [workCount, setWorkCount] = useState(0)
+  const [following, setFollowing] = useState<Subscription[]>([])
+  const [audience, setAudience] = useState<Subscription[]>([])
+  const [flowOpen, setFlowOpen] = useState(false)
+  const [sheet, setSheet] = useState<Sheet | null>(null)
+  const [nicknameDraft, setNicknameDraft] = useState('')
+  const [savingNickname, setSavingNickname] = useState(false)
 
-  const EMAIL_TO_KEY = 'zhiji.email.to'
+  const [relationMode, setRelationMode] = useState<'list' | 'invite' | 'join'>('list')
+  const [inviteResult, setInviteResult] = useState<{ code: string; expires_at: string } | null>(null)
+  const [joinCode, setJoinCode] = useState('')
+  const [relationshipBusy, setRelationshipBusy] = useState(false)
+  const [relationshipError, setRelationshipError] = useState<string | null>(null)
+  const [removingId, setRemovingId] = useState<number | null>(null)
+  const [accountBusy, setAccountBusy] = useState(false)
+  const [accountError, setAccountError] = useState<string | null>(null)
 
-  // v3.7: 邮件配置 + 回应通知
-  const [showEmail, setShowEmail] = useState(false)
-  const [showNagging, setShowNagging] = useState(false)
-  const [emailConfig, setEmailConfig] = useState<EmailConfig | null>(null)
-  const [emailTo, setEmailTo] = useState(localStorage.getItem(EMAIL_TO_KEY) || '')
-  const [unseenReactions, setUnseenReactions] = useState(0)
+  const refreshRelationships = async () => {
+    const [nextFollowing, nextAudience] = await Promise.all([
+      subscriptionsApi.following(),
+      subscriptionsApi.audience(),
+    ])
+    setFollowing(nextFollowing)
+    setAudience(nextAudience)
+  }
 
   useEffect(() => {
     profileApi.get().then(setProfile).catch(() => toast.error('加载资料失败'))
-    statsApi.get().then(setStats).catch(() => {})
-    emailApi.config().then(setEmailConfig).catch(() => {})
-    loadUnseenReactions()
+    characterApi.get().then(setCharacter).catch(() => {})
+    storyApi.listWorks().then(works => setWorkCount(works.length)).catch(() => {})
+    refreshRelationships().catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toast])
 
-  const loadUnseenReactions = () => {
-    shareApi.unseenReactions().then(r => setUnseenReactions(r.unseen_count)).catch(() => {})
+  const preset = presetOf(character)
+  const heroSrc = character?.reference_image_url || character?.source_photo_url || null
+  const characterName = character?.nickname?.trim() || preset?.name || ''
+  const hasCharacter = Boolean(heroSrc)
+  const availableActions = preset?.actions ?? []
+  const activeAction = (character?.display_action as ActionKey | null) ?? availableActions[0] ?? null
+  const heroDisplaySrc =
+    preset && activeAction && availableActions.includes(activeAction)
+      ? actionUrl(preset.id, activeAction)
+      : heroSrc
+
+  const openSheet = (next: Sheet) => {
+    setRelationshipError(null)
+    if (next === 'nickname') setNicknameDraft(characterName)
+    if (next === 'relations') { setRelationMode('list'); setInviteResult(null) }
+    setSheet(next)
   }
 
-  const persistEmotion = (m: EmotionMode) => {
-    setEmotionMode(m); localStorage.setItem('emotionMode', m); setShowEmotion(false)
-  }
-  const persistStyle = (s: DrawStyle) => {
-    setDrawStyle(s); localStorage.setItem('drawStyle', s); setShowStyle(false)
-  }
-  const persistReminder = (t: string) => {
-    setReminderTime(t); localStorage.setItem('reminderTime', t)
-  }
-
-  const saveEmailTo = () => {
-    const v = emailTo.trim()
-    localStorage.setItem(EMAIL_TO_KEY, v)
-    setShowEmail(false)
-    toast.success('邮件设置已保存')
-  }
-
-  const handleMarkSeen = async () => {
-    await shareApi.markSeen()
-    setUnseenReactions(0)
-  }
-
-  const exportPdf = async () => {
-    toast.info('正在准备 PDF...')
+  const pickAction = async (action: ActionKey) => {
+    if (!character) return
+    const previous = character
+    setCharacter({ ...character, display_action: action })
     try {
-      const res = await fetch(exportApi.pdfUrl(), { method: 'POST' })
-      if (!res.ok) {
-        let detail = '导出失败'
-        try { detail = (await res.json()).detail ?? detail } catch {}
-        toast.error(detail)
-        return
-      }
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url; a.download = 'zhiji-diaries.pdf'; a.click()
-      URL.revokeObjectURL(url)
-      toast.success('PDF 已下载')
+      setCharacter(await characterApi.update({ display_action: action }))
     } catch {
-      toast.error('导出失败')
+      setCharacter(previous)
+      toast.error('切换展示动作失败')
     }
   }
 
-  const shareCard = () => toast.info('截图分享暂未上线，先用系统截图分享吧 ✨')
-  const annualReport = () => toast.info('年度报告正在烹饪中，敬请期待 🍳')
-
-  if (!profile) {
-    return <div className="page mine-page"><p style={{ padding: 20 }} className="muted">加载中…</p></div>
+  const saveNickname = async () => {
+    const value = nicknameDraft.trim()
+    if (!value) return
+    setSavingNickname(true)
+    try {
+      setCharacter(await characterApi.update({ nickname: value }))
+      setSheet(null)
+      toast.success('已保存')
+    } catch {
+      toast.error('保存失败')
+    } finally {
+      setSavingNickname(false)
+    }
   }
 
-  const joinedDays = daysBetween(profile.created_at)
+  const createInvite = async () => {
+    setRelationshipBusy(true)
+    setRelationshipError(null)
+    try {
+      setInviteResult(await subscriptionsApi.createInvite())
+      toast.success('邀请码已生成')
+    } catch {
+      setRelationshipError('暂时无法生成邀请码')
+    } finally {
+      setRelationshipBusy(false)
+    }
+  }
+
+  const joinInvite = async () => {
+    const code = joinCode.trim()
+    if (!code) return
+    setRelationshipBusy(true)
+    setRelationshipError(null)
+    try {
+      await subscriptionsApi.joinInvite(code)
+      setJoinCode('')
+      setRelationMode('list')
+      await refreshRelationships()
+      toast.success('已建立关系')
+    } catch {
+      setRelationshipError('邀请码不可用或已过期')
+    } finally {
+      setRelationshipBusy(false)
+    }
+  }
+
+  const removeRelationship = async (
+    subscription: Subscription,
+    direction: 'audience' | 'following',
+  ) => {
+    const person = direction === 'audience'
+      ? subscription.subscriber?.nickname
+      : subscription.owner?.nickname
+    const label = person ?? '这位用户'
+    const message = direction === 'audience'
+      ? `退出与「${label}」的可见关系吗？对方将看不到你已授权的作品。`
+      : `退出与「${label}」的关注关系吗？你将看不到对方授权给你的作品。`
+    if (!window.confirm(message)) return
+    setRemovingId(subscription.id)
+    setRelationshipError(null)
+    try {
+      await subscriptionsApi.remove(subscription.id)
+      await refreshRelationships()
+      toast.success('关系已退出')
+    } catch {
+      setRelationshipError('退出关系失败')
+    } finally {
+      setRemovingId(null)
+    }
+  }
+
+  const runLogout = async () => {
+    setAccountBusy(true)
+    setAccountError(null)
+    try { await logout() }
+    catch { setAccountError('退出失败，请稍后重试') }
+    finally { setAccountBusy(false) }
+  }
+
+  if (!profile) {
+    return <div className="page mine-page mine-scope"><p style={{ padding: 20 }} className="muted">加载中…</p></div>
+  }
+
+  if (flowOpen) {
+    return (
+      <CharacterFlow
+        character={character}
+        mode={hasCharacter ? 'change' : 'create'}
+        onClose={() => setFlowOpen(false)}
+        onSaved={next => {
+          setCharacter(next)
+          setFlowOpen(false)
+          toast.success('小主角已确认')
+        }}
+      />
+    )
+  }
 
   return (
-    <div className="page mine-page">
-      <ProfileHeader profile={profile} joinedDays={joinedDays} onUpdate={setProfile} />
+    <div className="page mine-page mine-scope">
+      <h1 className="mine-page-title">我的小主角</h1>
 
-      {stats && (
-        <section className="mine-section">
-          <div className="stat-grid">
-            <StatCard label="日记" value={stats.diary_count} icon="📖"/>
-            <StatCard label="碎片" value={stats.fragment_count} icon="📝"/>
-            <StatCard label="最长连续" value={`${stats.longest_streak} 天`} icon="🔥"/>
-            <StatCard label="本月打卡" value={`${stats.month_checkins} / ${stats.month_days}`} icon="📅"/>
-          </div>
-        </section>
-      )}
+      <section className="hero-card" aria-labelledby="hero-name">
+        <div className={`hero-stage ${hasCharacter ? 'has-scene' : ''}`}>
+          {hasCharacter ? (
+            <img
+              className="hero-scene"
+              src={sceneUrl(activeAction ?? 'idle')}
+              alt=""
+              aria-hidden="true"
+            />
+          ) : (
+            <div className="hero-glow" aria-hidden="true" />
+          )}
+          <PixelSprite
+            src={heroDisplaySrc}
+            alt={hasCharacter ? (characterName || '我的小主角') : '还没有小主角'}
+            eager
+            className="hero-sprite"
+          />
+          <div className="hero-shadow" aria-hidden="true" />
+        </div>
 
-      <section className="mine-section">
-        <h2 className="mine-section-title">分享与导出</h2>
-        <div className="cell-list">
-          <button className="cell pressable" onClick={exportPdf}>
-            <span className="cell-icon">📄</span>
-            <span className="cell-label">导出全部日记为 PDF</span>
-            <span className="cell-chev">›</span>
-          </button>
-          <button className="cell pressable" onClick={() => setShowEmail(true)}>
-            <span className="cell-icon">📧</span>
-            <span className="cell-label">家书设置</span>
-            <span className="cell-value">{emailConfig?.configured ? '邮件已配置 ✓' : '未配置'}</span>
-            <span className="cell-chev">›</span>
-          </button>
-          {unseenReactions > 0 && (
-            <button className="cell pressable" onClick={handleMarkSeen}>
-              <span className="cell-icon">💌</span>
-              <span className="cell-label">家人回应了你</span>
-              <span className="cell-value" style={{ background: '#FF6B6B', color: '#fff', borderRadius: 10, padding: '2px 8px', fontSize: 12 }}>{unseenReactions} 条新回应</span>
-              <span className="cell-chev">›</span>
+        {hasCharacter ? (
+          <>
+            <h2 className="hero-name" id="hero-name">{characterName || '还没起名字'}</h2>
+            <p className="hero-meta">
+              {workCount > 0 ? `已陪你完成 ${workCount} 本绘本` : '还没有一起完成的绘本'}
+            </p>
+
+            {preset && availableActions.length > 0 && (
+              <div className="action-row" role="group" aria-label="更换展示动作">
+                {availableActions.map(action => (
+                  <button
+                    key={action}
+                    type="button"
+                    className={`action-chip ${activeAction === action ? 'active' : ''}`}
+                    aria-pressed={activeAction === action}
+                    onClick={() => void pickAction(action)}
+                  >
+                    <span
+                      className="action-thumb"
+                      style={{ backgroundImage: `url(${sceneUrl(action)})` }}
+                    >
+                      <PixelSprite src={actionUrl(preset.id, action)} alt="" />
+                    </span>
+                    <span className="action-label">{ACTION_LABELS[action]}</span>
+                    {activeAction === action && (
+                      <span className="action-tick" aria-hidden="true"><Check /></span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <button type="button" className="m-primary" onClick={() => onGoStories?.()}>
+              用 TA 生成这篇绘本
+            </button>
+          </>
+        ) : (
+          <>
+            <h2 className="hero-name" id="hero-name">还没有小主角</h2>
+            <p className="hero-meta">选一位角色代表你走进故事，TA 会成为之后绘本里的固定主角。</p>
+            <button type="button" className="m-primary" onClick={() => setFlowOpen(true)}>
+              选一位日记小主角
+            </button>
+          </>
+        )}
+      </section>
+
+      <section className="settings-section" aria-labelledby="character-settings-title">
+        <h2 className="settings-title" id="character-settings-title">角色设置</h2>
+        <div className="settings-list">
+          {hasCharacter && (
+            <button type="button" className="settings-row" onClick={() => openSheet('nickname')}>
+              <span className="settings-label">修改角色昵称</span>
+              <ChevronRight />
             </button>
           )}
-          <button className="cell pressable" onClick={() => setShowNagging(true)}>
-            <span className="cell-icon">💌</span>
-            <span className="cell-label">化解妈妈的牵挂</span>
-            <span className="cell-value">5 条待化解</span>
-            <span className="cell-chev">›</span>
+          <button type="button" className="settings-row" onClick={() => setFlowOpen(true)}>
+            <span className="settings-label">{hasCharacter ? '更换小主角' : '选一位小主角'}</span>
+            <ChevronRight />
           </button>
-          <button className="cell pressable" onClick={shareCard}>
-            <span className="cell-icon">🎴</span>
-            <span className="cell-label">分享我的知己卡片</span>
-            <span className="cell-chev">›</span>
+          <button type="button" className="settings-row" onClick={() => openSheet('relations')}>
+            <span className="settings-label">关注与粉丝</span>
+            <ChevronRight />
           </button>
-          <button className="cell pressable" onClick={annualReport}>
-            <span className="cell-icon">📊</span>
-            <span className="cell-label">生成年度报告</span>
-            <span className="cell-hint">敬请期待</span>
-            <span className="cell-chev">›</span>
+          <button type="button" className="settings-row" onClick={() => openSheet('account')}>
+            <span className="settings-label">账号</span>
+            <ChevronRight />
           </button>
         </div>
+        {hasCharacter && (
+          <p className="settings-footnote">
+            换角色只影响之后生成的绘本，已完成的绘本不会改变。
+          </p>
+        )}
       </section>
 
-      <section className="mine-section">
-        <h2 className="mine-section-title">偏好设置</h2>
-        <div className="cell-list">
-          <button className="cell pressable" onClick={() => setShowEmotion(true)}>
-            <span className="cell-icon">🎨</span>
-            <span className="cell-label">默认情感模式</span>
-            <span className="cell-value">{EMOTION_LABELS[emotionMode]}</span>
-            <span className="cell-chev">›</span>
-          </button>
-          <button className="cell pressable" onClick={() => setShowStyle(true)}>
-            <span className="cell-icon">🖼</span>
-            <span className="cell-label">默认绘图风格</span>
-            <span className="cell-value">{STYLE_LABELS[drawStyle]}</span>
-            <span className="cell-chev">›</span>
-          </button>
-          <label className="cell">
-            <span className="cell-icon">⏰</span>
-            <span className="cell-label">日记提醒时间</span>
+      <BottomSheet open={sheet === 'nickname'} onClose={() => setSheet(null)} title="角色昵称">
+        <div className="mine-scope sheet-body">
+          <label className="m-field-label" htmlFor="character-nickname">给 TA 起个名字</label>
+          <div className="m-input-wrap">
             <input
-              className="cell-time"
-              type="time"
-              value={reminderTime}
-              onChange={e => persistReminder(e.target.value)}
+              id="character-nickname"
+              value={nicknameDraft}
+              maxLength={24}
+              placeholder={preset?.name ?? '小满'}
+              onChange={event => setNicknameDraft(event.target.value)}
             />
-          </label>
-        </div>
-      </section>
-
-      {showEmotion && (
-        <div className="mine-sheet-backdrop" onClick={() => setShowEmotion(false)}>
-          <div className="mine-sheet" onClick={e => e.stopPropagation()}>
-            <div className="bs-handle" />
-            <div className="sheet-title">情感模式</div>
-            <div className="option-list">
-              {EMOTION_OPTIONS.map(o => (
-                <button
-                  key={o.key}
-                  className={`option-row ${emotionMode === o.key ? 'active' : ''}`}
-                  onClick={() => persistEmotion(o.key)}
-                >
-                  <div className="option-label">{o.label}</div>
-                  <div className="option-desc">{o.desc}</div>
-                </button>
-              ))}
-            </div>
-            {emotionMode === 'custom' && (
-              <input
-                className="custom-prompt"
-                placeholder="描述你想要的情感风格..."
-                value={customEmotion}
-                onChange={e => { setCustomEmotion(e.target.value); localStorage.setItem('customEmotion', e.target.value) }}
-              />
-            )}
+            <Pencil />
           </div>
+          <button
+            type="button"
+            className="m-primary"
+            disabled={!nicknameDraft.trim() || savingNickname}
+            onClick={() => void saveNickname()}
+          >
+            {savingNickname ? '保存中' : '保存'}
+          </button>
         </div>
-      )}
+      </BottomSheet>
 
-      {showStyle && (
-        <div className="mine-sheet-backdrop" onClick={() => setShowStyle(false)}>
-          <div className="mine-sheet" onClick={e => e.stopPropagation()}>
-            <div className="bs-handle" />
-            <div className="sheet-title">绘图风格</div>
-            <div className="option-list">
-              {STYLE_OPTIONS.map(o => (
+      <BottomSheet
+        open={sheet === 'relations'}
+        onClose={() => !relationshipBusy && setSheet(null)}
+        title="关注与粉丝"
+      >
+        <div className="mine-scope sheet-body">
+          {relationMode === 'list' && (
+            <>
+              <div className="relationship-actions">
                 <button
-                  key={o.key}
-                  className={`option-row ${drawStyle === o.key ? 'active' : ''}`}
-                  onClick={() => persistStyle(o.key)}
+                  type="button"
+                  onClick={() => { setRelationMode('invite'); setRelationshipError(null); setInviteResult(null) }}
                 >
-                  <div className="option-label">{o.label}</div>
-                  <div className="option-desc">{o.desc}</div>
+                  邀请
                 </button>
-              ))}
-            </div>
-            {drawStyle === 'custom' && (
-              <input
-                className="custom-prompt"
-                placeholder="描述你想要的画面感..."
-                value={customDraw}
-                onChange={e => { setCustomDraw(e.target.value); localStorage.setItem('customDraw', e.target.value) }}
-              />
-            )}
-          </div>
-        </div>
-      )}
-
-      {showEmail && (
-        <div className="mine-sheet-backdrop" onClick={() => setShowEmail(false)}>
-          <div className="mine-sheet" onClick={e => e.stopPropagation()}>
-            <div className="bs-handle" />
-            <div className="sheet-title">📧 家书设置</div>
-            {emailConfig && !emailConfig.configured ? (
-              <>
-                <p className="muted" style={{ fontSize: 13, lineHeight: 1.6, margin: '0 0 12px' }}>
-                  邮件服务未配置。<br/>
-                  请在服务器 <code>.env</code> 中设置 SMTP 相关变量：<br/>
-                  <code>SMTP_HOST</code> / <code>SMTP_PORT</code> / <code>SMTP_USER</code> / <code>SMTP_PASSWORD</code>
-                </p>
-                <div className="sl-tip" style={{ background: 'rgba(255,200,100,0.15)', padding: '8px 12px', borderRadius: 8, marginBottom: 12 }}>
-                  以 QQ 邮箱为例：登录 QQ 邮箱 → 设置 → 账户 → 开启 SMTP 服务 → 获取授权码
+                <button
+                  type="button"
+                  onClick={() => { setRelationMode('join'); setRelationshipError(null) }}
+                >
+                  加入
+                </button>
+              </div>
+              <div className="relationship-block">
+                <div className="relationship-title">
+                  <span>看见我的人</span>
+                  <small>{audience.length} 人</small>
                 </div>
-              </>
-            ) : (
-              <>
-                <p className="muted" style={{ fontSize: 13, lineHeight: 1.6, margin: '0 0 12px' }}>
-                  邮件服务已配置 {emailConfig?.from_addr ? `(${emailConfig.from_addr})` : ''}<br/>
-                  输入家人的邮箱地址，之后寄家书时可直接发送邮件。
-                </p>
-                <input
-                  className="sl-email-input"
-                  type="email"
-                  placeholder="家人的邮箱地址"
-                  value={emailTo}
-                  onChange={e => setEmailTo(e.target.value)}
-                  style={{ marginBottom: 12 }}
-                />
-              </>
-            )}
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button
-                className="cell pressable"
-                style={{ flex: 1, justifyContent: 'center', padding: '10px 14px', borderRadius: 12 }}
-                onClick={() => setShowEmail(false)}
-              >取消</button>
-              <button
-                className="cell pressable"
-                style={{ flex: 1, justifyContent: 'center', padding: '10px 14px', borderRadius: 12, background: '#B8D4C2', color: '#2D4738' }}
-                onClick={saveEmailTo}
-              >保存</button>
-            </div>
-          </div>
-        </div>
-      )}
+                {audience.length === 0 ? (
+                  <p className="relationship-empty">还没有人可以看见你的作品。</p>
+                ) : audience.map(item => (
+                  <div className="relationship-row" key={`audience-${item.id}`}>
+                    <span className="avatar-dot">{item.subscriber?.nickname?.slice(0, 1) ?? '人'}</span>
+                    <strong>{item.subscriber?.nickname ?? '未命名用户'}</strong>
+                    <button
+                      type="button"
+                      disabled={removingId === item.id}
+                      onClick={() => void removeRelationship(item, 'audience')}
+                    >
+                      退出关系
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="relationship-block">
+                <div className="relationship-title">
+                  <span>我关心的人</span>
+                  <small>{following.length} 人</small>
+                </div>
+                {following.length === 0 ? (
+                  <p className="relationship-empty">加入对方的邀请码后，会在这里出现。</p>
+                ) : following.map(item => (
+                  <div className="relationship-row" key={`following-${item.id}`}>
+                    <span className="avatar-dot">{item.owner?.nickname?.slice(0, 1) ?? '人'}</span>
+                    <strong>{item.owner?.nickname ?? '未命名用户'}</strong>
+                    <button
+                      type="button"
+                      disabled={removingId === item.id}
+                      onClick={() => void removeRelationship(item, 'following')}
+                    >
+                      退出关系
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
 
-      <NaggingSheet open={showNagging} onClose={() => setShowNagging(false)} />
+          {relationMode === 'invite' && (
+            <div className="relationship-sheet">
+              <p>生成邀请码后，把它发给你想分享生活空间的人。对方加入后，只能看到你主动设置可见范围的作品。</p>
+              {inviteResult ? (
+                <div className="invite-code" aria-label="邀请码">{inviteResult.code}</div>
+              ) : (
+                <button type="button" className="m-primary" onClick={createInvite} disabled={relationshipBusy}>
+                  {relationshipBusy ? '生成中' : '生成邀请码'}
+                </button>
+              )}
+              <button type="button" className="m-ghost" onClick={() => setRelationMode('list')}>返回列表</button>
+            </div>
+          )}
+
+          {relationMode === 'join' && (
+            <div className="relationship-sheet">
+              <label htmlFor="subscription-code">邀请码</label>
+              <input
+                id="subscription-code"
+                value={joinCode}
+                onChange={event => setJoinCode(event.target.value)}
+                placeholder="输入对方发来的邀请码"
+              />
+              <button
+                type="button"
+                className="m-primary"
+                onClick={joinInvite}
+                disabled={relationshipBusy || !joinCode.trim()}
+              >
+                {relationshipBusy ? '加入中' : '加入'}
+              </button>
+              <button type="button" className="m-ghost" onClick={() => setRelationMode('list')}>返回列表</button>
+            </div>
+          )}
+
+          {relationshipError && <p className="relationship-error" role="alert">{relationshipError}</p>}
+        </div>
+      </BottomSheet>
+
+      <BottomSheet open={sheet === 'account'} onClose={() => !accountBusy && setSheet(null)} title="账号">
+        <div className="mine-scope sheet-body">
+          <div className="account-row">
+            <span>当前账号</span>
+            <strong>{user?.nickname ?? profile.nickname}</strong>
+          </div>
+          <button type="button" className="m-danger" onClick={runLogout} disabled={accountBusy}>
+            退出登录
+          </button>
+          {accountError && <p className="relationship-error" role="alert">{accountError}</p>}
+        </div>
+      </BottomSheet>
     </div>
   )
 }

@@ -1,0 +1,119 @@
+.story-drafts-page {
+  min-height: 100vh;
+  padding: 18px 16px 42px;
+  background: var(--color-bg);
+}
+
+.story-drafts-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.story-drafts-back {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.story-drafts-back svg { width: 18px; height: 18px; }
+
+.story-drafts-header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.story-drafts-header p {
+  margin: 3px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.story-drafts-state {
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.story-drafts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.story-drafts-section h2 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.story-drafts-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.story-draft-row {
+  width: 100%;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  text-align: left;
+}
+
+.story-draft-icon {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(86, 112, 92, 0.12);
+  color: var(--color-primary-dark);
+}
+
+.story-draft-icon svg { width: 17px; height: 17px; }
+
+.story-draft-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.story-draft-main strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.story-draft-main span {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

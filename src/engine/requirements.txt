@@ -5,3 +5,10 @@ httpx==0.27.0
 python-dotenv==1.0.1
 python-multipart==0.0.9
 reportlab==4.2.5
+argon2-cffi>=23.1,<26
+# 绘本视频：拼接分镜需要 ffmpeg。装了这个就不必依赖系统包管理器；
+# 若机器上已有 ffmpeg，也可以改用 FFMPEG_BIN 指向它。
+imageio-ffmpeg>=0.5,<1
+# 绘本页是 3MB 级PNG，两张base64 后单个请求接近 10MB。
+# Pillow 缺失时代码会原样发送，但强烈建议装上以便压成 JPEG。
+Pillow>=10.3,<12

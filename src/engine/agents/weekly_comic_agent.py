@@ -9,10 +9,13 @@ GLM is treated as a planner only — it does not draw.
 """
 import json
 import re
-import httpx
 from typing import Optional
-from config import DIARY_API_BASE_URL, DIARY_API_KEY, DIARY_MODEL
-from agents.image_agent import STYLE_PROMPTS
+from agents.diary_agent import (
+    AIEmptyResponseError,
+    AIResponseError,
+    request_chat_completion,
+)
+from agents.image_agent import DEFAULT_STYLE_KEY, STYLE_PROMPTS
 
 _THINK_RE = re.compile(r"<think>[\s\S]*?</think>", re.IGNORECASE)
 _UNTERMINATED_THINK_RE = re.compile(r"<think>[\s\S]*$", re.IGNORECASE)
@@ -30,7 +33,7 @@ def _strip_think(text: str) -> str:
 def _style_prompt(style: str, custom_style_prompt: Optional[str]) -> str:
     if style == "custom" and custom_style_prompt:
         return custom_style_prompt
-    return STYLE_PROMPTS.get(style) or STYLE_PROMPTS["ghibli"]
+    return STYLE_PROMPTS.get(style) or STYLE_PROMPTS[DEFAULT_STYLE_KEY]
 
 
 def _format_day_block(date: str, schedules: list, fragments: list) -> str:
@@ -105,22 +108,15 @@ async def plan_weekly_comic(
         nickname, week_start, week_end, days, style, custom_style_prompt,
     )
 
-    async with httpx.AsyncClient(timeout=60) as client:
-        response = await client.post(
-            f"{DIARY_API_BASE_URL}/chat/completions",
-            headers={"Authorization": f"Bearer {DIARY_API_KEY}"},
-            json={
-                "model": DIARY_MODEL,
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_message},
-                ],
-                "temperature": 0.7,
-                "max_tokens": 1200,
-            },
-        )
-        response.raise_for_status()
-        raw = response.json()["choices"][0]["message"]["content"]
+    raw = await request_chat_completion(
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message},
+        ],
+        temperature=0.7,
+        max_tokens=1200,
+        timeout=60,
+    )
 
     cleaned = _strip_think(raw)
     match = _JSON_RE.search(cleaned)
@@ -130,10 +126,18 @@ async def plan_weekly_comic(
 
     try:
         payload = json.loads(match.group(0))
-        prompt = str(payload.get("prompt", "")).strip()[:800]
-        caption = str(payload.get("caption", "")).strip()[:30] or "这一周的样子"
-        if not prompt:
-            raise ValueError("empty prompt")
+        if not isinstance(payload, dict):
+            raise AIResponseError("AI service returned an invalid response")
+        raw_prompt = payload.get("prompt")
+        if not isinstance(raw_prompt, str) or not raw_prompt.strip():
+            raise AIEmptyResponseError("AI service returned empty content")
+        prompt = raw_prompt.strip()[:800]
+        raw_caption = payload.get("caption")
+        caption = (
+            raw_caption.strip()[:30]
+            if isinstance(raw_caption, str) and raw_caption.strip()
+            else "这一周的样子"
+        )
         return prompt, caption
-    except Exception:
+    except (json.JSONDecodeError, TypeError):
         return cleaned[:780], "这一周的样子"

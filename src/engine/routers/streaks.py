@@ -1,11 +1,12 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from auth.dependencies import get_current_user_id
 from database import get_db
 
 router = APIRouter()
 
 
 @router.get("")
-async def get_streaks(user_id: int = 1):
+async def get_streaks(user_id: int = Depends(get_current_user_id)):
     db = await get_db()
     try:
         cursor = await db.execute(
